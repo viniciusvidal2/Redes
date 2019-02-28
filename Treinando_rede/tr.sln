@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Treinando_rede", "Treinando_rede.pyproj", "{C96DB5CD-C11A-403C-ADE5-83F577A4F458}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C96DB5CD-C11A-403C-ADE5-83F577A4F458}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C96DB5CD-C11A-403C-ADE5-83F577A4F458}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F6778FD1-7E9E-4D6E-B461-1DA5764B7203}
+	EndGlobalSection
+EndGlobal
