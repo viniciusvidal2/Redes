@@ -19,9 +19,6 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="desktop.ini" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="ferramentas_leitura.py">
       <SubType>Code</SubType>
     </Compile>
