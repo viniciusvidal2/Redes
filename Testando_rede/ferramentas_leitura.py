@@ -10,16 +10,17 @@ from sklearn.externals import joblib
 from sklearn.preprocessing import Normalizer 
 
 def ReadData(filePath):
-    ## This function read the data for the file in the filePath variable
+    ## This function reads the data for the file in the filePath variable
+    Dados_array = []
+    for file in filePath:
+        dados_temp = joblib.load(file)
+        Dados_array.extend(dados_temp)
+        
+    Data_array = np.array(Dados_array)
+    return Data_array
 
-        dados = joblib.load(filePath)
 
-        Data_array = np.array(dados)
-
-        return Data_array
-
-
-def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
+def OrganizeData(Data_array, sampleSize, inputNumber, Ndays, outPosition):
 
     # This function organize the Data_array considering the sampleSize and inputNumber
     # sampleSize --> Number of samples  (days in this case)
@@ -41,13 +42,23 @@ def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
                 VecData.append(Data_array[i+j][k])
         OutputData.append(VecData)
 
-        for l in range(Ndays):
-            for m in range(len(outPosition)):
-                VecData2.append(Data_array[i+j+l+1][outPosition[m]])
+        #for l in range(Ndays):
+        #    for m in range(len(outPosition)):
+        #        VecData2.append(Data_array[i+j+l+1][outPosition[m]])
 
+        # Dessa forma ficam todos os dias de uma variavel por vez agrupados em cada amostra
+        # Exemplo: [a1 a2 a3 b1 b2 b3] para variaveis a e b, por 3 dias
+        for m in range(len(outPosition)):
+            for l in range(Ndays):
+                if i+j+l+1 < len(Data_array):
+                    VecData2.append(Data_array[i+j+l+1][outPosition[m]])
         OutputResult.append(VecData2)
 
-        
+    OutputData   = np.array(OutputData)
+    OutputResult = np.array(OutputResult)
+
+    OutputData   = OutputData.astype('float32')
+    OutputResult = OutputResult.astype('float32')
 
     return OutputData, OutputResult
 
@@ -86,10 +97,15 @@ def ReturnRealValue(y_norm, mins, maxs, amps, variables):
     # the real values back to the user
     
     y = y_norm
-    item = 0
-    #bring back every variable of interest from the real ranges
-    for v in range(len(variables)):
-        index = variables[v]
-        y[:, v] = mins[index] + amps[index]*y_norm[:, v]
+    close_index = variables[0]
+    # now they are all close values, so multiply everything by the close values scales
+    for r in np.arange(0, y_norm.shape[0]):
+        y[r, :] = mins[close_index] + amps[close_index]*y_norm[r, :]
+
+    ##bring back every variable of interest from the real ranges
+    #item = 0
+    #for v in range(len(variables)):
+    #    index = variables[v]
+    #    y[:, v] = mins[index] + amps[index]*y_norm[:, v]
 
     return y

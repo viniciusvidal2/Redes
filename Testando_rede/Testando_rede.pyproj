@@ -19,16 +19,10 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="desktop.ini" />
-  </ItemGroup>
-  <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ferramentas_leitura.py" />
-    <Compile Include="rede_concatenada.py" />
-    <Compile Include="rede_convolucional.py" />
-    <Compile Include="rede_recursiva.py" />
     <Compile Include="Testando_rede.py">
       <SubType>Code</SubType>
     </Compile>

@@ -13,18 +13,24 @@ from keras.layers import BatchNormalization
 class Rede_complexa:
     @staticmethod
     def montar(subseq, int_tempo, features, saidas):
-        kernel=5
+        kernel=saidas
         rede = Sequential()
-        rede.add(TimeDistributed(Conv1D(filters=64, kernel_size=kernel, activation='relu'), 
+        rede.add(TimeDistributed(Conv1D(filters=228, kernel_size=kernel, activation='elu'), 
                                   input_shape=(None, int(int_tempo/subseq), features)))
-        #rede.add(TimeDistributed(MaxPooling1D(pool_size=2)))
+        rede.add(TimeDistributed(MaxPooling1D(pool_size=2)))
         
         rede.add(TimeDistributed(Flatten()))
-        rede.add(LSTM(30, activation = 'relu'))
+        rede.add(LSTM(100, activation = 'tanh'))
 
-        rede.add(Dense(saidas*5, activation = 'relu'))
+        rede.add(Dense(saidas*9, activation = 'elu'))
 
-        rede.add(Dropout(0.25))
+        #rede.add(Dropout(0.25))
+
+        rede.add(Dense(saidas*15, activation = 'elu'))
+
+        rede.add(Dense(saidas*10, activation = 'elu'))
+
+        rede.add(Dropout(0.15))
         
         rede.add(Dense(saidas, activation = 'relu'))
 

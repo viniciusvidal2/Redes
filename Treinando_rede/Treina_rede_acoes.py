@@ -36,41 +36,56 @@ from sklearn.model_selection import train_test_split
 # > fechamento
 # Deve definir quantos dias usar para treinar e descobrir o proximo
 ## CODIGO PARA A LEITURA DE DADOS UTILIZANDO O JOBLIB
-filePath = './../DATAYEAR/COTACAO_BOVA11_2017.txt'
-SampleSize = 40
-Subsequences = 1
-InputNumber = 6
-Dias_previstos = 1
+#filePath = ['./../DATAYEAR/COTACAO_CMIG4_2011.txt', './../DATAYEAR/COTACAO_CMIG4_2012.txt', './../DATAYEAR/COTACAO_CMIG4_2013.txt', './../DATAYEAR/COTACAO_CMIG4_2014.txt',
+#            './../DATAYEAR/COTACAO_CMIG4_2015.txt', './../DATAYEAR/COTACAO_CMIG4_2016.txt', './../DATAYEAR/COTACAO_CMIG4_2017.txt', './../DATAYEAR/COTACAO_CMIG4_2018.txt']
+#filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
+#            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
+filePath = ['./../DATAYEAR/COTACAO_PETR4_2011.txt', './../DATAYEAR/COTACAO_PETR4_2012.txt', './../DATAYEAR/COTACAO_PETR4_2013.txt', './../DATAYEAR/COTACAO_PETR4_2014.txt',
+            './../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
+SampleSize = 50
+Subsequences = 2
+mascara_entradas = [0, 1, 0, 0, 1, 1]
+InputNumber = sum(mascara_entradas)
+Dias_previstos = 4
 OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
 
 # Organizando dados
 print('Organizando dados...')
 Data = fl.ReadData(filePath)
-Data_norm = fl.Normalize(Data)
-X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions)
+Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
+
+X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
 
 X = X.reshape(X.shape[0], Subsequences, int(SampleSize/Subsequences), InputNumber)
 Y = Y.reshape(Y.shape[0], Y.shape[1])
 ## Plotar aqui as saidas de fechamento e abertura em um grafico para analise visual de padroes
-#plt.figure()
-#plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Abertura real")
-#plt.plot(np.arange(0, Y.shape[0]), Y[:, 1], label="Fechamento real")
-#plt.title('Dados Reais')
-#plt.xlabel('Dia')
-#plt.ylabel('Valor normalizado')
-#plt.legend()
-#plt.show(block=True)
+plt.figure()
+plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
+plt.title('Dados Reais')
+plt.xlabel('Dia')
+plt.ylabel('Valor normalizado')
+plt.legend()
+plt.show(block=True)
 
-## funciona aqui a separacao entre treino, validacao e teste automatica apos o reshape mesmo
-(trainx, val_testx, trainy, val_testy) = train_test_split(X        , Y        , test_size=0.3, random_state=30)
-(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.5, random_state=30)
-# Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-#dias_teste = 6 # um a mais que o tanto de dias que queremos
-#(testx, testy) = X[-dias_teste:-1], Y[-dias_teste:-1]
-#(trainx, valx, trainy, valy) = train_test_split(X[:-dias_teste], Y[:-dias_teste], test_size=0.15, random_state=30)
+### funciona aqui a separacao entre treino, validacao e teste automatica apos o reshape mesmo
+#(trainx, val_testx, trainy, val_testy) = train_test_split(X        , Y        , test_size=0.3, random_state=30)
+#(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.5, random_state=30)
+
+########################### Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
+intervalo_teste = np.arange(400, 600) # epoca ainda desconhecida, amostras sequenciais
+X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
+
+dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
+(testx, testy) = X_teste[dias_teste], Y_teste[dias_teste] # Dias que realmente havera teste sobre, entrarao na funcao predict
+
+Xtreino = np.delete(X, intervalo_teste, axis=0)
+Ytreino = np.delete(Y, intervalo_teste, axis=0)
+#Xtreino = np.delete(X, intervalo_teste+X.shape[0], axis=0)
+#Ytreino = np.delete(Y, intervalo_teste+X.shape[0], axis=0)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=20)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = True
+treinar = False
 if treinar:
     epocas = 400 # por quantas epocas treinar
 
@@ -87,34 +102,12 @@ if treinar:
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=10, epochs=epocas, callbacks=[melhor_rede], verbose=1)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=100, epochs=epocas, callbacks=[melhor_rede], verbose=1)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-saida_teste = rede2.predict(testx, verbose=1)
-#saida_teste = np.zeros([Dias_previstos, len(Out_posi)])
-#saida_teste = saida_teste.astype('float32')
-
 #amostra_teste = 3 # Qual dia do conjunto de teste usar como ponto de partida para prever Dias_previstos futuros
-
-#teste_atual = testx[amostra_teste]
-#teste_complexa = testx_complexa[amostra_teste] # Rede complexa - backup necessario
-#saida_real  = testy[np.arange(amostra_teste, amostra_teste+Dias_previstos)]
-## Rodando aqui iterativamente para prever Dias_previstos a frente
-#for d in np.arange(0, Dias_previstos):
-#    teste_atual_resh = teste_atual.reshape(1, Subsequences, int(SampleSize/Subsequences), InputNumber) # para entrada na TimeDistributed, 1 sample, subsequences, timesteps/subsequences, 6 features
-#    #teste_atual_resh = teste_atual.reshape(1, teste_atual.shape[0], teste_atual.shape[1]) # para entrada na LSTM, 1 sample, 50 timesteps, 6 features
-#    saida_temp = rede2.predict(teste_atual_resh)
-#    saida_teste[d] = saida_temp
-    
-#    # Rede complexa aqui
-#    teste_complexa = np.delete(teste_complexa, 0, axis=0)
-#    teste_complexa = np.append(teste_complexa, saida_temp, axis=0)
-#    teste_atual    = teste_complexa # Pega do backup anterior modificado, entre no reshape na proxima iteracao correto
-
-    ## Renova o vetor de entradas com o ultimo dia previsto, removendo o primeiro
-    #teste_atual = np.delete(teste_atual, 0, axis=0) # remove a primeira linha de features, primeiro dia
-    #teste_atual = np.append(teste_atual, saida_temp, axis=0)
+saida_teste = rede2.predict(testx, verbose=1)
 
 ########################### Plot grafico da evolucao da rede
 if treinar:
@@ -126,15 +119,68 @@ if treinar:
     plt.ylabel('Value')
     plt.legend()
 
-# Plot para comparacao com o conjunto de teste - Precos de saida de abertura e fechamento
-testy = testy.flatten()
-saida_teste = saida_teste.flatten()
+# Preparando dados para plotar
+conjunto_par   = np.arange(0, testy.shape[0], 2)
+conjunto_impar = np.arange(1, testy.shape[0], 2)
 
+testey_par   = testy.copy()
+testey_impar = testy.copy()
+saida_teste_par   = saida_teste.copy()
+saida_teste_impar = saida_teste.copy()
+
+testey_par[conjunto_par]          = np.zeros([1, Dias_previstos*len(OutputPositions)])
+testey_impar[conjunto_impar]      = np.zeros([1, Dias_previstos*len(OutputPositions)])
+saida_teste_par[conjunto_par]     = np.zeros([1, Dias_previstos*len(OutputPositions)])
+saida_teste_impar[conjunto_impar] = np.zeros([1, Dias_previstos*len(OutputPositions)])
+
+#testy = testy[amostra_teste].flatten()
+testey_par        = testey_par.flatten()
+testey_impar      = testey_impar.flatten()
+saida_teste_par   = saida_teste_par.flatten()
+saida_teste_impar = saida_teste_impar.flatten()
+
+# Plot para comparacao com o conjunto de teste - Precos de saida de abertura e fechamento
 plt.figure()
-plt.plot(np.arange(0, testy.shape[0] ), testy , label="Fechamento Real")
-plt.plot(np.arange(0, saida_teste.shape[0]), saida_teste, label="Fechamento Calculado")
+plt.plot(np.arange(0, testey_par.shape[0] )    , testey_par     , 'b+', label="Fechamento Real")
+plt.plot(np.arange(0, testey_impar.shape[0] )  , testey_impar   , 'k+', label="Fechamento Real")
+plt.plot(np.arange(0, saida_teste_par.shape[0])  , saida_teste_par  , 'ro', label="Fechamento Calculado")
+plt.plot(np.arange(0, saida_teste_impar.shape[0]), saida_teste_impar, 'mo', label="Fechamento Calculado")
 plt.title('Fechamento')
 plt.xlabel('Dia')
 plt.ylabel('Valor_norm')
 plt.legend()
+plt.grid()
+
+########################### Trazer de volta para valores reais
+testy = testy.flatten()
+saida_teste = saida_teste.flatten()
+Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
+saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
+
+plt.figure()
+plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
+plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
+plt.title('Fechamento')
+plt.xlabel('Dia')
+plt.ylabel('Valor R$')
+plt.legend()
+plt.grid()
+
+# Calculo do erro entre os valores reais R$
+erros = Y_real - saida_teste_real
+media_erros = np.mean(erros)
+media_erros_abs = np.mean(np.abs(erros))
+erro_max = np.max(erros)
+erro_min = np.min(erros)
+
+print('\nA media dos erros e: {}\t Sobre valores absolutos: {}'.format(media_erros, media_erros_abs))
+print('\nErro minimo R$     : {}\t Erro maximo R$         : {}'.format(erro_min   , erro_max       ))
+
+plt.figure()
+plt.plot(np.arange(0, erros.shape[0] ), erros, label="Erros")
+plt.title('Erros Real - Calculado')
+plt.xlabel('Dia')
+plt.ylabel('Valor R$')
+plt.legend()
+plt.grid()
 plt.show(block=True)
