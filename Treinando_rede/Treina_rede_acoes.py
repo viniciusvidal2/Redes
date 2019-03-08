@@ -8,6 +8,7 @@ from keras.optimizers import SGD
 from keras.optimizers import Adam
 
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import EarlyStopping
 
 from keras.utils import plot_model
 from keras.utils import np_utils
@@ -40,11 +41,10 @@ from sklearn.model_selection import train_test_split
 #            './../DATAYEAR/COTACAO_CMIG4_2015.txt', './../DATAYEAR/COTACAO_CMIG4_2016.txt', './../DATAYEAR/COTACAO_CMIG4_2017.txt', './../DATAYEAR/COTACAO_CMIG4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
-filePath = ['./../DATAYEAR/COTACAO_PETR4_2011.txt', './../DATAYEAR/COTACAO_PETR4_2012.txt', './../DATAYEAR/COTACAO_PETR4_2013.txt', './../DATAYEAR/COTACAO_PETR4_2014.txt',
-            './../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
+filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
 SampleSize = 50
-Subsequences = 2
-mascara_entradas = [0, 1, 0, 0, 1, 1]
+Subsequences = 1
+mascara_entradas = [1, 1, 0, 0, 1, 1]
 InputNumber = sum(mascara_entradas)
 Dias_previstos = 4
 OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
@@ -59,20 +59,20 @@ X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, Outpu
 X = X.reshape(X.shape[0], Subsequences, int(SampleSize/Subsequences), InputNumber)
 Y = Y.reshape(Y.shape[0], Y.shape[1])
 ## Plotar aqui as saidas de fechamento e abertura em um grafico para analise visual de padroes
-plt.figure()
-plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
-plt.title('Dados Reais')
-plt.xlabel('Dia')
-plt.ylabel('Valor normalizado')
-plt.legend()
-plt.show(block=True)
+#plt.figure()
+#plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
+#plt.title('Dados Reais')
+#plt.xlabel('Dia')
+#plt.ylabel('Valor normalizado')
+#plt.legend()
+#plt.show(block=True)
 
 ### funciona aqui a separacao entre treino, validacao e teste automatica apos o reshape mesmo
 #(trainx, val_testx, trainy, val_testy) = train_test_split(X        , Y        , test_size=0.3, random_state=30)
 #(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.5, random_state=30)
 
 ########################### Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-intervalo_teste = np.arange(400, 600) # epoca ainda desconhecida, amostras sequenciais
+intervalo_teste = np.arange(400, 450) # epoca ainda desconhecida, amostras sequenciais
 X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
 
 dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
@@ -85,7 +85,7 @@ Ytreino = np.delete(Y, intervalo_teste, axis=0)
 (trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=20)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = False
+treinar = True
 if treinar:
     epocas = 400 # por quantas epocas treinar
 
@@ -95,14 +95,15 @@ if treinar:
     #rede = Rede_recursiva.montar(SampleSize, InputNumber, len(Out_posi))
     rede = Rede_complexa.montar(Subsequences, SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     rede.compile(optimizer=adam, loss='mse')
-    # Callback para salvar melhor rede
+    # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
+    parada_forcada = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
     # Plotando arquitetura da rede
     plot_model(rede, "Melhores_redes/arquitetura_atual.png", show_shapes=True, show_layer_names=True)
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=100, epochs=epocas, callbacks=[melhor_rede], verbose=1)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=5, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=1)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
@@ -112,8 +113,8 @@ saida_teste = rede2.predict(testx, verbose=1)
 ########################### Plot grafico da evolucao da rede
 if treinar:
     plt.style.use("ggplot")
-    plt.plot(np.arange(0, epocas), H.history["loss"], label="train_loss")
-    plt.plot(np.arange(0, epocas), H.history["val_loss"], label="val_loss")
+    plt.plot(np.arange(0, len(H.history["loss"])), H.history["loss"], label="train_loss")
+    plt.plot(np.arange(0, len(H.history["val_loss"])), H.history["val_loss"], label="val_loss")
     plt.title('Evolution')
     plt.xlabel('Epoch #')
     plt.ylabel('Value')
@@ -156,10 +157,25 @@ testy = testy.flatten()
 saida_teste = saida_teste.flatten()
 Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
 saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
+testey_par2        = fl.ReturnRealValue(testey_par, minimos, maximos, amplitudes, OutputPositions)
+testey_impar2      = fl.ReturnRealValue(testey_impar, minimos, maximos, amplitudes, OutputPositions)
+saida_teste_par2   = fl.ReturnRealValue(saida_teste_par, minimos, maximos, amplitudes, OutputPositions)
+saida_teste_impar2 = fl.ReturnRealValue(saida_teste_impar, minimos, maximos, amplitudes, OutputPositions)
 
 plt.figure()
 plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
 plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
+plt.title('Fechamento')
+plt.xlabel('Dia')
+plt.ylabel('Valor R$')
+plt.legend()
+plt.grid()
+
+plt.figure()
+plt.plot(np.arange(0, testey_par2.shape[0]), testey_par2, 'b+', label="Fechamento Real")
+plt.plot(np.arange(0, testey_impar2.shape[0]), testey_impar2, 'k+', label="Fechamento Real")
+plt.plot(np.arange(0, saida_teste_par2.shape[0]), saida_teste_par2, 'ro', label="Fechamento Calculado")
+plt.plot(np.arange(0, saida_teste_impar2.shape[0]), saida_teste_impar2, 'mo', label="Fechamento Calculado")
 plt.title('Fechamento')
 plt.xlabel('Dia')
 plt.ylabel('Valor R$')
