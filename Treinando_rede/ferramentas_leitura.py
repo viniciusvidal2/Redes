@@ -3,6 +3,7 @@
 
 import pandas
 import datetime, shelve
+from datetime import datetime
 import collections
 import bovespa
 import numpy as np
@@ -29,8 +30,6 @@ def OrganizeData(Data_array, sampleSize, inputNumber, Ndays, outPosition, masc_e
     # Ndays --> Numero de dias a ser previsto
     # outPosition --> index of each output inside de Data_array
 
-    # Organiza os dados para 50 dias com 6 entradas em cada dia [Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
-
     OutputData  =  []
     OutputResult = []
 
@@ -43,16 +42,16 @@ def OrganizeData(Data_array, sampleSize, inputNumber, Ndays, outPosition, masc_e
                     VecData.append(Data_array[i+j][k])
         OutputData.append(VecData)
 
-        #for l in range(Ndays):
-        #    for m in range(len(outPosition)):
-        #        VecData2.append(Data_array[i+j+l+1][outPosition[m]])
+        for l in range(Ndays):
+            for m in range(len(outPosition)):
+                VecData2.append(Data_array[i+j+l+1][outPosition[m]])
 
         # Dessa forma ficam todos os dias de uma variavel por vez agrupados em cada amostra
         # Exemplo: [a1 a2 a3 b1 b2 b3] para variaveis a e b, por 3 dias
-        for m in range(len(outPosition)):
-            for l in range(Ndays):
-                if i+j+l+1 < len(Data_array):
-                    VecData2.append(Data_array[i+j+l+1][outPosition[m]])
+        #for m in range(len(outPosition)):
+        #    for l in range(Ndays):
+        #        if i+j+l+1 < len(Data_array):
+        #            VecData2.append(Data_array[i+j+l+1][outPosition[m]])
         OutputResult.append(VecData2)
 
     OutputData   = np.array(OutputData)

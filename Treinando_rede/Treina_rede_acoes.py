@@ -42,11 +42,11 @@ from sklearn.model_selection import train_test_split
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
 filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
-SampleSize = 100
+SampleSize = 30
 Subsequences = 1
-mascara_entradas = [1, 1, 1, 1, 1, 1]
+mascara_entradas = [0, 1, 0, 0, 0, 1, 1, 1, 1, 0]
 InputNumber = sum(mascara_entradas)
-Dias_previstos = 4
+Dias_previstos = 5
 OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
 
 # Organizando dados
@@ -90,20 +90,20 @@ if treinar:
     epocas = 2000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.0001)
+    adam = Adam(lr=0.0005)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
     #rede = Rede_recursiva.montar(SampleSize, InputNumber, len(Out_posi))
     rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     rede.compile(optimizer=adam, loss='mse')
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
-    parada_forcada = EarlyStopping(monitor='val_loss', patience=200, verbose=1)
+    parada_forcada = EarlyStopping(monitor='val_loss', patience=190, verbose=1)
     # Plotando arquitetura da rede
     plot_model(rede, "Melhores_redes/arquitetura_atual.png", show_shapes=True, show_layer_names=True)
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=10, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=1)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=20, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=1)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')

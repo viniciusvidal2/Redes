@@ -20,22 +20,22 @@ class Rede_complexa:
         
         rede = Sequential()
 
-        rede.add(Conv1D(filters=100, kernel_size=kernel, activation='elu', input_shape=(int_tempo, features)))
+        rede.add(Conv1D(filters=40, kernel_size=kernel, activation='relu', input_shape=(int_tempo, features)))
         #rede.add(TimeDistributed(MaxPooling1D(pool_size=2)))
         
-        rede.add(Conv1D(filters=100, kernel_size=10, activation='elu'))
+        #rede.add(Conv1D(filters=40, kernel_size=10, activation='relu'))
         #rede.add(BatchNormalization())
 
-        rede.add(MaxPooling1D(pool_size=2))
+        #rede.add(MaxPooling1D(pool_size=2))
         
-        rede.add(Conv1D(filters=100, kernel_size=10, activation='elu'))
+        rede.add(Conv1D(filters=40, kernel_size=2, activation='relu'))
 
-        rede.add(Conv1D(filters=100, kernel_size=10, activation='elu'))
+        #rede.add(Conv1D(filters=40, kernel_size=2, activation='relu'))
 
-        #rede.add(TimeDistributed(Flatten()))
-        rede.add(LSTM(80))
+        rede.add(TimeDistributed(Flatten()))
+        rede.add(LSTM(30))
 
-        rede.add(Dense(20, activation = 'elu'))
+        rede.add(Dense(10, activation = 'relu'))
 
         #rede.add(Dropout(0.25))
 
