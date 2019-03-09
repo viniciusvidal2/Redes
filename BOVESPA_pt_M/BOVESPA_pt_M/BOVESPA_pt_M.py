@@ -22,7 +22,7 @@ def descript():
 
     filepath  = 'E:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
     filename  = 'COTACAO_'
-    stockname = ['ABCP11','BOVA11','ITUB4','VALE4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
+    stockname = ['BOVA11','VALE4','ABCP11','ITUB4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
     year      = [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018]
 
     Ndays     = 14

@@ -47,31 +47,35 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays):
 
            print('\n ATIVO: {} \t ANO: {} '.format(stockname[j],year[i]))
            inputData = []
+           try:
 
-           for rec in bf.query(stock=stockname[j]):
-               print('Data:{} \t Abertura:{} \t  Fechamento:{} '.format(str(rec.date.day)+'-'+str(rec.date.month)+'-'+str(rec.date.year),rec.price_open, rec.price_close))
-               #Preenchendo o vetor com os indicadores
-               inputData.append([str(rec.date.day)+'-'+str(rec.date.month)+'-'+str(rec.date.year),rec.price_open, rec.price_close,rec.price_high,rec.price_low,rec.price_mean,rec.volume])
+               for rec in bf.query(stock=stockname[j]):
+                   print('Data:{} \t Abertura:{} \t  Fechamento:{} '.format(str(rec.date.day)+'-'+str(rec.date.month)+'-'+str(rec.date.year),rec.price_open, rec.price_close))
+                   #Preenchendo o vetor com os indicadores
+                   inputData.append([str(rec.date.day)+'-'+str(rec.date.month)+'-'+str(rec.date.year),rec.price_open, rec.price_close,rec.price_high,rec.price_low,rec.price_mean,rec.volume])
 
-           # Calculo dos indicadores e concatenação com a matriz inputdata para que possa ser salva em um arquivo
-           Array = np.array(inputData)
+               # Calculo dos indicadores e concatenação com a matriz inputdata para que possa ser salva em um arquivo
+               Array = np.array(inputData)
 
-           Med = Ind.MME(Ndays,Array[:,2])
-           Ifr = Ind.IFR(Ndays,Array[:,1:3])
-           Obv = Ind.OBV(Array[:,1:7])
-           K,D = Ind.OS(Ndays,Array[:,1:7])
+               Med = Ind.MME(Ndays,Array[:,2])
+               Ifr = Ind.IFR(Ndays,Array[:,1:3])
+               Obv = Ind.OBV(Array[:,1:7])
+               K,D = Ind.OS(Ndays,Array[:,1:7])
 
-           V1 = concatena(inputData,Med)
-           V2 = concatena(V1,Ifr)
-           V3 = concatena(V2,Obv)
-           V4 = concatena(V3,K)
-           V5 = concatena(V4,D)
+               V1 = concatena(inputData,Med)
+               V2 = concatena(V1,Ifr)
+               V3 = concatena(V2,Obv)
+               V4 = concatena(V3,K)
+               V5 = concatena(V4,D)
            
-           inputData = np.array(V5)
+               inputData = np.array(V5)
 
-           # salva Dados em arquivo já descriptografado (B3) com adição de indicadores
+               # salva Dados em arquivo já descriptografado (B3) com adição de indicadores
 
-           joblib.dump(inputData,filename+stockname[j]+'_'+str(year[i])+'.txt')
+               joblib.dump(inputData,filename+stockname[j]+'_'+str(year[i])+'.txt')
+
+           except:
+                print("{}_{}  NÃO ENCONTRADO! ".format(stockname[j], year[i]))
 
 
 
