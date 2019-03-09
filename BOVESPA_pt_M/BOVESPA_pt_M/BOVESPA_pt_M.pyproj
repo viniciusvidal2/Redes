@@ -25,6 +25,9 @@
     <Compile Include="Bovespatofile.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Filetorede.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Indicadores.py">
       <SubType>Code</SubType>
     </Compile>
