@@ -13,7 +13,7 @@ def concatena(A,b):
 
     return A
 
-def readFromBovespa(filepath,filename,stockname,year,Ndays):
+def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
     """
     filepath = Caminho completo para o aquivo baixado do site da B3
         Ex: 'E:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos\\
@@ -29,6 +29,9 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays):
 
     Ndays = Número de dias para o calculo dos indicadores
         Ex: Ndays = 14 (a maioria dos indicadores utiliza 14 como parâmetro)
+
+    path_to_save = Caminho completo até a pasta onde será salvo o arquivo descriptografado
+        Ex: path_to_save = 'C:\\Users\\Mathaus\\Documents\\GitHub\\Redes\\DATAYEAR\\'
 
     Salva Arquivo com os dados Lidos da B3 no formato 
     [Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D)]
@@ -71,8 +74,11 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays):
                inputData = np.array(V5)
 
                # salva Dados em arquivo já descriptografado (B3) com adição de indicadores
+               if path_to_save is None:
+                   joblib.dump(inputData,filename+stockname[j]+'_'+str(year[i])+'.txt')
+               else:
+                   joblib.dump(inputData,path_to_save+filename+stockname[j]+'_'+str(year[i])+'.txt')
 
-               joblib.dump(inputData,filename+stockname[j]+'_'+str(year[i])+'.txt')
 
            except:
                 print("{}_{}  NÃO ENCONTRADO! ".format(stockname[j], year[i]))
