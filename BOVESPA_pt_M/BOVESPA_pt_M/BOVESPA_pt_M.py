@@ -55,6 +55,7 @@ def leituradado():
 
     # Criação de Figura para a comparação dos valores já lidos no aquivo, com os aqui calculados
     # Figura com indicadores salvos previamente
+
     f, figure = plt.subplots(4,sharex=True)
 
     figure[0].plot(np.transpose(Array[:,7].astype('float32')),label = 'MME')
