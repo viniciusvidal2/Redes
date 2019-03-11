@@ -36,6 +36,40 @@ def MME(Ndias,Data):
 
     return MME
 
+def ROC(N,Fechamento):
+    """
+    Rate of Change (ROC) – Taxa de Variação    
+    SAÍDA de -1 (zero) a (1 Um)
+
+    -1 --- 0 Variação negativa
+     0 --- 1 Variação positiva
+
+    N    = numero de dias anteriores no  qual se deseja a ROC.
+    Data = [valor1, valor2, valor3, valor4, valor5, ...]
+
+    A entrada deve ser um vetor apenas com os dados que se deseja a taxa de variação
+    Diferentemente das outras funções onde a entrada é toda a matriz de dados
+
+    Descrição Matemática
+
+    Taxa de Variação[i] = (Preço de Fechamento[i] – Preço de Fechamento[i-n]) / Preço de Fechamento[i-n])
+
+    o primeiro MME[anterior] deve ser a média aritimética dos dias anteriores em um dado
+    periodo de tempo (ou pode ser assumido o primeiro valor de preço).
+
+    Sinal de Compra: a MME mais curta cruza para cima da MME mais longa
+    Sinal de Venda: a MME mais curta cruza para baixo da MME mais longa
+
+    """
+    
+    ROC = np.zeros(len(Fechamento))
+    Fechamento = Fechamento.astype('float32')
+
+    for i in range(len(Fechamento)-N):
+         
+        ROC[N+i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
+
+    return ROC
 
 def IFR(Ndias,Data):
     """
@@ -110,7 +144,7 @@ def OS(Ndias, Data):
 
     Ndias = geralmente igual a 14
     Oscilador Estocastico
-    Data must be ---> [Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
+    Data must be ---> [Abertura, Fechamanto, Maxima, Miníma, Média, Volume,...]
 
     Se a linha %K cruzar para acima da %D temos, em geral a configuração de um call de compra.
     Por outro lado, se a %K cruzar para baixo da %D temos um sinal de venda.
@@ -129,8 +163,10 @@ def OS(Ndias, Data):
     while i < (len(Data[:,1])):
         minima = min(Data[i:i+Ndias,1])
         maxima = max(Data[i:i+Ndias,1])
-
-        K[i] = (Data[i,1] - minima) / (maxima - minima )*100
+        if(maxima - minima)!= 0:
+            K[i] = (Data[i,1] - minima) / (maxima - minima)*100
+        else:
+            K[i] = 0
 
         if i>=dias:
             D[i] = sum(K[i-dias:i])/dias
@@ -163,8 +199,10 @@ def williams_R(Ndias,Data):
     while i < (len(Data[:,1])):
         minima = min(Data[i:i+Ndias,1])
         maxima = max(Data[i:i+Ndias,1])
-
-        R[i] = (maxima - Data[i,1]) / (maxima - minima )* -100
+        if(maxima - minima)!= 0:
+            R[i] = (maxima - Data[i,1]) / (maxima - minima )* -100
+        else:
+            R[i] = 0
                
         i = i + 1
 

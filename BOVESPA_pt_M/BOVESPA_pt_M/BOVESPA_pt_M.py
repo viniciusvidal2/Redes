@@ -24,16 +24,17 @@ def descript():
     filename  = 'COTACAO_'
     stockname = ['BOVA11','VALE4','ABCP11','ITUB4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
     year      = [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018]
+    path_save = 'C:\\Users\\Mathaus\\Documents\\GitHub\\Redes\\DATAYEAR\\'
 
     Ndays     = 14
 
-    Rd.readFromBovespa(filepath,filename,stockname,year,Ndays)
+    Rd.readFromBovespa(filepath,filename,stockname,year,Ndays,path_save)
 
 def leituradado():
 
     # ======== Leitura e organização dos dados para entrada na rede ===========
 
-    filePath    = 'COTACAO_BOVA11_2009.txt'
+    filePath    = 'COTACAO_ELET6_2017.txt'
     SampleSize  = 3
     InputNumber = 1
     NdaysPrev = 1
@@ -50,8 +51,11 @@ def leituradado():
     K,D = Ind.OS(14,Array[:,1:7])
     R   = Ind.williams_R(14,Array[:,1:7])
 
+    Variacao = Ind.ROC(30,Array[:,2])
+
     # Criação de Figura para a comparação dos valores já lidos no aquivo, com os aqui calculados
     # Figura com indicadores salvos previamente
+
     f, figure = plt.subplots(4,sharex=True)
 
     figure[0].plot(np.transpose(Array[:,7].astype('float32')),label = 'MME')
@@ -84,7 +88,17 @@ def leituradado():
     figure1[3].plot(K,label = 'K')
     figure1[3].plot(D,label = 'D')
 
+     # Figura com Variação percentual calculados
+
+
+    f, figure2 = plt.subplots(2,sharex=True)
+
+    figure2[0].plot(Variacao,label = 'ROC')
+    figure2[0].grid(1)
+    
     plt.show()
 
+
+#[Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D)]
 
 descript()
