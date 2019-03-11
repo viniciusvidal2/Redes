@@ -2,15 +2,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>7e248d65-4ced-4997-8777-452e391fc60f</ProjectGuid>
+    <ProjectGuid>733f5fff-02f7-4284-abe7-db21ba9284e9</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Rede_BOVA.py</StartupFile>
+    <StartupFile>BOVESPA_pt_M.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>Rede_BOVA</Name>
-    <RootNamespace>Rede_BOVA</RootNamespace>
+    <Name>BOVESPA_pt_M</Name>
+    <RootNamespace>BOVESPA_pt_M</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +21,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Rede_BOVA.py" />
+    <Compile Include="BOVESPA_pt_M.py" />
+    <Compile Include="Bovespatofile.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Filetorede.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indicadores.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
