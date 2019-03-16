@@ -37,7 +37,7 @@ def OrganizeData(Data_array, sampleSize, inputNumber, Ndays, outPosition, masc_e
         VecData = []
         VecData2 = []
         for j in range(sampleSize):
-            for k in range(len(masc_ent)):
+            for k in range(len(masc_ent)): # todas as entradas possiveis, mas so valem mesmo as marcadas com 1 na mascara
                 if masc_ent[k] == 1:
                     VecData.append(Data_array[i+j][k])
         OutputData.append(VecData)
@@ -103,3 +103,15 @@ def ReturnRealValue(y_norm, mins, maxs, amps, variables):
         y = mins[index] + amps[index]*y_norm
 
     return y
+
+def ROC(y, dias):
+    
+    y2 = []
+    if dias > 1:
+        for i in range(0, y.shape[0]):
+            y2.append( y[i, -1] - y[i, 0] )
+    else:
+        y2 = y
+    y2 = np.array(y2)
+
+    return y2

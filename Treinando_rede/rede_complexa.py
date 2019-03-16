@@ -16,7 +16,7 @@ class Rede_complexa:
     @staticmethod
     def montar(int_tempo, features, saidas):
         
-        kernel=int(int_tempo/2)
+        kernel=int(4)
         
         rede = Sequential()
 
@@ -26,23 +26,24 @@ class Rede_complexa:
         #rede.add(Conv1D(filters=40, kernel_size=10, activation='relu'))
         #rede.add(BatchNormalization())
 
-        #rede.add(MaxPooling1D(pool_size=2))
+        rede.add(MaxPooling1D(pool_size=2))
         
         rede.add(Conv1D(filters=40, kernel_size=2, activation='relu'))
 
         #rede.add(Conv1D(filters=40, kernel_size=2, activation='relu'))
+        rede.add(MaxPooling1D(pool_size=2))
+        
+        rede.add(Flatten())
+        #rede.add(LSTM(30))
 
-        rede.add(TimeDistributed(Flatten()))
-        rede.add(LSTM(30))
-
-        rede.add(Dense(10, activation = 'relu'))
+        rede.add(Dense(100, activation = 'relu'))
 
         #rede.add(Dropout(0.25))
 
-        #rede.add(Dense(saidas*15, activation = 'elu'))
+        rede.add(Dense(20, activation = 'relu'))
 
-        rede.add(Dropout(0.50))
+        #rede.add(Dropout(0.50))
         
-        rede.add(Dense(saidas, activation = 'sigmoid'))
+        rede.add(Dense(saidas, activation = 'relu'))
 
         return rede
