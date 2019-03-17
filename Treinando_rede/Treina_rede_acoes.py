@@ -41,13 +41,13 @@ from sklearn.model_selection import train_test_split
 #            './../DATAYEAR/COTACAO_CMIG4_2015.txt', './../DATAYEAR/COTACAO_CMIG4_2016.txt', './../DATAYEAR/COTACAO_CMIG4_2017.txt', './../DATAYEAR/COTACAO_CMIG4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
-#filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
-filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
-SampleSize = 20
+filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
+#filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
+SampleSize = 30
 Subsequences = 1
-mascara_entradas = [1, 1, 0, 0, 0, 1, 1, 1, 1, 0]
+mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 InputNumber = sum(mascara_entradas)
-Dias_previstos = 3
+Dias_previstos = 5
 OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
 
 # Organizando dados
@@ -75,7 +75,7 @@ Y = Y.reshape(Y.shape[0], Y.shape[1])
 #(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.1, random_state=30)
 
 ########################## Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-intervalo_teste = np.arange(-180, -30) # epoca ainda desconhecida, amostras sequenciais
+intervalo_teste = np.arange(-10, -1) # epoca ainda desconhecida, amostras sequenciais
 X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
 
 dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
@@ -85,27 +85,18 @@ Xtreino = np.delete(X, X.shape[0]+intervalo_teste, axis=0)
 Ytreino = np.delete(Y, Y.shape[0]+intervalo_teste, axis=0)
 #Xtreino = np.delete(X, intervalo_teste+X.shape[0], axis=0)
 #Ytreino = np.delete(Y, intervalo_teste+X.shape[0], axis=0)
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.15, random_state=20)
-
-trainy = fl.ROC(trainy, Dias_previstos)*10
-valy   = fl.ROC(valy, Dias_previstos)*10
-testy  = fl.ROC(testy, Dias_previstos)*10
-
-trainy = trainy.reshape(trainy.shape[0], 1)
-valy   = valy.reshape(valy.shape[0], 1)
-testy  = testy.reshape(testy.shape[0], 1)
-
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.10, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = True
+treinar = False
 if treinar:
     epocas = 2000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.001, decay=1/epocas, amsgrad=False)
+    adam = Adam(lr=0.0005, decay=0.000001, amsgrad=False)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
-    #rede = Rede_recursiva.montar(SampleSize, InputNumber, 1)
-    rede = Rede_complexa.montar(SampleSize, InputNumber, 1)
+    rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
+    #rede = Rede_complexa.montar(SampleSize, InputNumber, 1)
     rede.compile(optimizer=adam, loss='mse')
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
@@ -115,11 +106,12 @@ if treinar:
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=10, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=1)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=2, epochs=epocas, callbacks=[melhor_rede], verbose=1)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-#amostra_teste = 3 # Qual dia do conjunto de teste usar como ponto de partida para prever Dias_previstos futuros
+testx=valx
+testy=valy
 saida_teste = rede2.predict(testx, verbose=1)
 
 ########################### Plot grafico da evolucao da rede
@@ -194,8 +186,8 @@ plt.ylabel('Valor R$')
 plt.legend()
 plt.grid()
 
-# Calculo do erro entre os valores reais R$
-erros = Y_real - saida_teste_real
+ #Calculo do erro entre os valores reais R$
+erros = Y_real[0:len(saida_teste_real)] - saida_teste_real
 media_erros = np.mean(erros)
 media_erros_abs = np.mean(np.abs(erros))
 erro_max = np.max(erros)
@@ -211,4 +203,5 @@ plt.xlabel('Dia')
 plt.ylabel('Valor R$')
 plt.legend()
 plt.grid()
+
 plt.show(block=True)
