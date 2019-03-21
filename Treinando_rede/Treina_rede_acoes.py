@@ -26,41 +26,32 @@ from numpy import array
 from sklearn.model_selection import train_test_split
 
 ########################### Inicia lendo os dados, separando ou ja lendo de um arquivo
-# As entradas vao ser inicialmente:
-# > abertura
-# > fechamento
-# > minimo
-# > maximo
-# > media
-# > volume
-# As saidas vao ser inicialmente:
-# > fechamento
-# Deve definir quantos dias usar para treinar e descobrir o proximo
-## CODIGO PARA A LEITURA DE DADOS UTILIZANDO O JOBLIB
 #filePath = ['./../DATAYEAR/COTACAO_CMIG4_2011.txt', './../DATAYEAR/COTACAO_CMIG4_2012.txt', './../DATAYEAR/COTACAO_CMIG4_2013.txt', './../DATAYEAR/COTACAO_CMIG4_2014.txt',
 #            './../DATAYEAR/COTACAO_CMIG4_2015.txt', './../DATAYEAR/COTACAO_CMIG4_2016.txt', './../DATAYEAR/COTACAO_CMIG4_2017.txt', './../DATAYEAR/COTACAO_CMIG4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
 filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
-SampleSize = 7
-Subsequences = 1
-mascara_entradas = [1, 1, 0, 0, 1, 1, 1, 1, 1, 1]
-InputNumber = sum(mascara_entradas)
+SampleSize = 15
 Dias_previstos = 4
-OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
 
 # Organizando dados
 print('Organizando dados...')
 Data = fl.ReadData(filePath)
+Data = fl.removeDate(Data)
 Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 
+variacao  = fl.ROC(1, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
+Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
+
+mascara_entradas = [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+InputNumber = sum(mascara_entradas)
+OutputPositions = np.array([11]) # variaveis a serem previstas - olhar dentro da funcao
 X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
 
 X = X.reshape(X.shape[0], SampleSize, InputNumber)
 Y = Y.reshape(Y.shape[0], Y.shape[1])
 
-# Uma vez feito o reshape e mais facil pegar o valor de fechamento e calcular 
 ## Plotar aqui as saidas de fechamento e abertura em um grafico para analise visual de padroes
 #plt.figure()
 #plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
@@ -85,7 +76,7 @@ Xtreino = np.delete(X, X.shape[0]+intervalo_teste, axis=0)
 Ytreino = np.delete(Y, Y.shape[0]+intervalo_teste, axis=0)
 #Xtreino = np.delete(X, intervalo_teste+X.shape[0], axis=0)
 #Ytreino = np.delete(Y, intervalo_teste+X.shape[0], axis=0)
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.20, random_state=30)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.30, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
 treinar = False
@@ -93,7 +84,7 @@ if treinar:
     epocas = 2000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.0005, decay=0.000005, amsgrad=False)
+    adam = Adam(lr=0.0005, decay=0.0000005, amsgrad=False)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
     rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     #rede = Rede_complexa.montar(SampleSize, InputNumber, 1)
@@ -182,52 +173,52 @@ plt.ylabel('Valor_norm')
 plt.legend()
 plt.grid()
 
-########################### Trazer de volta para valores reais
-testy = testy.flatten()
-saida_teste = saida_teste.flatten()
-Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
-saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
-testey_par2        = fl.ReturnRealValue(testey_par, minimos, maximos, amplitudes, OutputPositions)
-testey_impar2      = fl.ReturnRealValue(testey_impar, minimos, maximos, amplitudes, OutputPositions)
-saida_teste_par2   = fl.ReturnRealValue(saida_teste_par, minimos, maximos, amplitudes, OutputPositions)
-saida_teste_impar2 = fl.ReturnRealValue(saida_teste_impar, minimos, maximos, amplitudes, OutputPositions)
+############################ Trazer de volta para valores reais
+#testy = testy.flatten()
+#saida_teste = saida_teste.flatten()
+#Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
+#saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
+#testey_par2        = fl.ReturnRealValue(testey_par, minimos, maximos, amplitudes, OutputPositions)
+#testey_impar2      = fl.ReturnRealValue(testey_impar, minimos, maximos, amplitudes, OutputPositions)
+#saida_teste_par2   = fl.ReturnRealValue(saida_teste_par, minimos, maximos, amplitudes, OutputPositions)
+#saida_teste_impar2 = fl.ReturnRealValue(saida_teste_impar, minimos, maximos, amplitudes, OutputPositions)
 
-plt.figure()
-plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
-plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
-plt.title('Fechamento')
-plt.xlabel('Dia')
-plt.ylabel('Valor R$')
-plt.legend()
-plt.grid()
+#plt.figure()
+#plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
+#plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
+#plt.title('Fechamento')
+#plt.xlabel('Dia')
+#plt.ylabel('Valor R$')
+#plt.legend()
+#plt.grid()
 
-plt.figure()
-plt.plot(np.arange(0, testey_par2.shape[0]), testey_par2, 'b+', label="Fechamento Real")
-plt.plot(np.arange(0, testey_impar2.shape[0]), testey_impar2, 'k+', label="Fechamento Real")
-plt.plot(np.arange(0, saida_teste_par2.shape[0]), saida_teste_par2, 'ro', label="Fechamento Calculado")
-plt.plot(np.arange(0, saida_teste_impar2.shape[0]), saida_teste_impar2, 'mo', label="Fechamento Calculado")
-plt.title('Fechamento')
-plt.xlabel('Dia')
-plt.ylabel('Valor R$')
-plt.legend()
-plt.grid()
+#plt.figure()
+#plt.plot(np.arange(0, testey_par2.shape[0]), testey_par2, 'b+', label="Fechamento Real")
+#plt.plot(np.arange(0, testey_impar2.shape[0]), testey_impar2, 'k+', label="Fechamento Real")
+#plt.plot(np.arange(0, saida_teste_par2.shape[0]), saida_teste_par2, 'ro', label="Fechamento Calculado")
+#plt.plot(np.arange(0, saida_teste_impar2.shape[0]), saida_teste_impar2, 'mo', label="Fechamento Calculado")
+#plt.title('Fechamento')
+#plt.xlabel('Dia')
+#plt.ylabel('Valor R$')
+#plt.legend()
+#plt.grid()
 
- #Calculo do erro entre os valores reais R$
-erros = Y_real[0:len(saida_teste_real)] - saida_teste_real
-media_erros = np.mean(erros)
-media_erros_abs = np.mean(np.abs(erros))
-erro_max = np.max(erros)
-erro_min = np.min(erros)
+# #Calculo do erro entre os valores reais R$
+#erros = Y_real[0:len(saida_teste_real)] - saida_teste_real
+#media_erros = np.mean(erros)
+#media_erros_abs = np.mean(np.abs(erros))
+#erro_max = np.max(erros)
+#erro_min = np.min(erros)
 
-print('\nA media dos erros e: {}\t Sobre valores absolutos: {}'.format(media_erros, media_erros_abs))
-print('\nErro minimo R$     : {}\t Erro maximo R$         : {}'.format(erro_min   , erro_max       ))
+#print('\nA media dos erros e: {}\t Sobre valores absolutos: {}'.format(media_erros, media_erros_abs))
+#print('\nErro minimo R$     : {}\t Erro maximo R$         : {}'.format(erro_min   , erro_max       ))
 
-plt.figure()
-plt.plot(np.arange(0, erros.shape[0] ), erros, label="Erros")
-plt.title('Erros Real - Calculado')
-plt.xlabel('Dia')
-plt.ylabel('Valor R$')
-plt.legend()
-plt.grid()
+#plt.figure()
+#plt.plot(np.arange(0, erros.shape[0] ), erros, label="Erros")
+#plt.title('Erros Real - Calculado')
+#plt.xlabel('Dia')
+#plt.ylabel('Valor R$')
+#plt.legend()
+#plt.grid()
 
 plt.show(block=True)

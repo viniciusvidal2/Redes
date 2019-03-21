@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.329
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "BOVESPA_pt_M", "BOVESPA_pt_M\BOVESPA_pt_M.pyproj", "{733F5FFF-02F7-4284-ABE7-DB21BA9284E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{733F5FFF-02F7-4284-ABE7-DB21BA9284E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{733F5FFF-02F7-4284-ABE7-DB21BA9284E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2E7A20F8-69F2-4BCA-94DC-1B1831977CE1}
+	EndGlobalSection
+EndGlobal

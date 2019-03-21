@@ -33,6 +33,6 @@ class Rede_recursiva:
         #rede.add(Dense(20, activation='relu'))
         #rede.add(Dropout(0.25))
 
-        rede.add(Dense(saidas, activation='relu'))
+        rede.add(Dense(saidas, activation='sigmoid'))
 
         return rede
