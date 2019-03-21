@@ -97,6 +97,7 @@ if treinar:
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
+    #rede = load_model('Melhores_redes/atual.hdf5')
     H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=2, epochs=epocas, callbacks=[melhor_rede], verbose=1)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
@@ -155,6 +156,11 @@ testey_par   = testy.copy()
 testey_impar = testy.copy()
 saida_teste_par   = saida_teste.copy()
 saida_teste_impar = saida_teste.copy()
+
+testey_par[conjunto_par]          = np.zeros(conjunto_par.shape)
+testey_impar[conjunto_impar]      = np.zeros(conjunto_impar.shape)
+saida_teste_par[conjunto_par]     = np.zeros(cconjunto_par.shape)
+saida_teste_impar[conjunto_impar] = np.zeros(cconjunto_impar.shape)
 
 testey_par        = testey_par.flatten()
 testey_impar      = testey_impar.flatten()
