@@ -6,11 +6,25 @@ import numpy as np
 import Indicadores as Ind
 from sklearn.externals import joblib
 
+def removeDate(A):
+    
+    A = A[:,1:len(A[1])]
+    
+    return A
+
 
 def concatena(A,b):
+    """
+    A = [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
+    """
+
+
+    A = A.tolist();
     for i in range(len(A)):
         A[i].append(b[i])
-
+    
+    A = np.array(A)
+    A = A.astype('float32')
     return A
 
 def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
@@ -65,7 +79,7 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
                Obv = Ind.OBV(Array[:,1:7])
                K,D = Ind.OS(Ndays,Array[:,1:7])
 
-               V1 = concatena(inputData,Med)
+               V1 = concatena(Array,Med)
                V2 = concatena(V1,Ifr)
                V3 = concatena(V2,Obv)
                V4 = concatena(V3,K)

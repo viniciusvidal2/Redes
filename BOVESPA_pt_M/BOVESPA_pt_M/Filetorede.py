@@ -10,6 +10,13 @@ from datetime import datetime
 #import plotly.graph_objs as go
 
 #plotly.tools.set_credentials_file(username='mathausfsilva', api_key='201113510277')
+def removeDate(A):
+    
+    A = A[:,1:len(A[1])]
+    
+    return A
+
+
 def plotCandle(Ndias,Data1):
 
         #[data, Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
@@ -94,6 +101,12 @@ def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
                 VecData2.append(Data_array[i+j+l+1][outPosition[m]])
 
         OutputResult.append(VecData2)
+
+    OutputResult = np.array(OutputResult)
+    OutputData   = np.array(OutputData)
+    
+    OutputResult = OutputResult.astype('float32')
+    OutputData   = OutputData.astype('float32')
           
   # Retorna as Entrada e as Saida da Rede
     return OutputData, OutputResult
@@ -101,7 +114,7 @@ def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
 
 def Normalize(array):
     """
-    Vetor deve ter a entrada do tipo  [Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
+    Vetor deve ter a entrada do tipo  [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
     Normaliza os valores entre 0 e 1 e remove a primeira coluna do aquivo com dados (primeira coluna  = Data)
 
     Todas as colunas da matriz são normalizadas com excessão da primeira.
@@ -110,7 +123,7 @@ def Normalize(array):
     minimo = [] 
     Amp    = []
 
-    Array  = np.array(array[:,1:len(array[1])])
+    #Array  = np.array(array[:,1:len(array[1])])
     Array  = Array.astype('float32')
     ArrayT = np.transpose(Array)
 

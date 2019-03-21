@@ -20,7 +20,7 @@ def descript():
 
     # Descriptografia dos dados baixados da B3
 
-    filepath  = 'E:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
+    filepath  = 'D:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
     filename  = 'COTACAO_'
     stockname = ['BOVA11','VALE4','ABCP11','ITUB4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
     year      = [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018]
@@ -42,34 +42,40 @@ def leituradado():
     # Faz a leitura do arquivo
     Array = Fr.ReadData(filePath)
 
+    # remover  a coluna com a data para trabalhar apenas com os numeros
+    Array = Fr.removeDate(Array)
+
     #Array = Fr.Normalize(Data)
 
     # Calcula todos o indices para conferir com o que está guardado no arquivo.
-    med = Ind.MME(14,Array[:,2])
-    ifr = Ind.IFR(14,Array[:,1:3])
-    obv = Ind.OBV(Array[:,1:7])
-    K,D = Ind.OS(14,Array[:,1:7])
-    R   = Ind.williams_R(14,Array[:,1:7])
+    med = Ind.MME(14,Array[:,1])
+    ifr = Ind.IFR(14,Array[:,0:2])
+    obv = Ind.OBV(Array[:,0:6])
+    K,D = Ind.OS(14,Array[:,0:6])
+    R   = Ind.williams_R(14,Array[:,0:6])
 
-    Variacao = Ind.ROC(30,Array[:,2])
+
+    Variacao = Ind.ROC(1,Array[:,1])
+    # O Arquivo lido é um array e deve ser convertido para lista para ser concatenado
+    Array = Rd.concatena(Array,Variacao)
 
     # Criação de Figura para a comparação dos valores já lidos no aquivo, com os aqui calculados
     # Figura com indicadores salvos previamente
 
     f, figure = plt.subplots(4,sharex=True)
 
-    figure[0].plot(np.transpose(Array[:,7].astype('float32')),label = 'MME')
+    figure[0].plot(np.transpose(Array[:,6].astype('float32')),label = 'MME')
     figure[0].grid(1)
 
-    figure[1].plot(np.transpose(Array[:,8].astype('float32')),label = 'IFR')
+    figure[1].plot(np.transpose(Array[:,7].astype('float32')),label = 'IFR')
     figure[1].grid(1)
 
     figure[2].grid(1)
-    figure[2].plot(np.transpose(Array[:,9].astype('float32')),label = 'OBV')
+    figure[2].plot(np.transpose(Array[:,8].astype('float32')),label = 'OBV')
 
     figure[3].grid(1)
-    figure[3].plot(np.transpose(Array[:,10].astype('float32')),label = 'K')
-    figure[3].plot(np.transpose(Array[:,11].astype('float32')),label = 'D')
+    figure[3].plot(np.transpose(Array[:,9].astype('float32')),label = 'K')
+    figure[3].plot(np.transpose(Array[:,10].astype('float32')),label = 'D')
 
 
     # Figura com indicadores calculados aqui
@@ -95,6 +101,9 @@ def leituradado():
 
     figure2[0].plot(Variacao,label = 'ROC')
     figure2[0].grid(1)
+
+    figure2[1].plot(np.transpose(Array[:,11].astype('float32')),label = 'ROC')
+    figure2[1].grid(1)
     
     plt.show()
 
