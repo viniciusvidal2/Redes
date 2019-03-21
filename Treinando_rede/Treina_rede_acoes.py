@@ -43,11 +43,11 @@ from sklearn.model_selection import train_test_split
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
 filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
-SampleSize = 30
+SampleSize = 7
 Subsequences = 1
-mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+mascara_entradas = [1, 1, 0, 0, 1, 1, 1, 1, 1, 1]
 InputNumber = sum(mascara_entradas)
-Dias_previstos = 5
+Dias_previstos = 4
 OutputPositions = np.array([1]) # variaveis a serem previstas - olhar dentro da funcao
 
 # Organizando dados
@@ -75,7 +75,7 @@ Y = Y.reshape(Y.shape[0], Y.shape[1])
 #(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.1, random_state=30)
 
 ########################## Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-intervalo_teste = np.arange(-10, -1) # epoca ainda desconhecida, amostras sequenciais
+intervalo_teste = np.arange(-40, -1) # epoca ainda desconhecida, amostras sequenciais
 X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
 
 dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
@@ -85,7 +85,7 @@ Xtreino = np.delete(X, X.shape[0]+intervalo_teste, axis=0)
 Ytreino = np.delete(Y, Y.shape[0]+intervalo_teste, axis=0)
 #Xtreino = np.delete(X, intervalo_teste+X.shape[0], axis=0)
 #Ytreino = np.delete(Y, intervalo_teste+X.shape[0], axis=0)
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.10, random_state=30)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.20, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
 treinar = False
@@ -93,7 +93,7 @@ if treinar:
     epocas = 2000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.0005, decay=0.000001, amsgrad=False)
+    adam = Adam(lr=0.0005, decay=0.000005, amsgrad=False)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
     rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     #rede = Rede_complexa.montar(SampleSize, InputNumber, 1)
@@ -110,9 +110,41 @@ if treinar:
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-testx=valx
-testy=valy
+testx=valx.copy()
+testy=valy.copy()
 saida_teste = rede2.predict(testx, verbose=1)
+
+########################### Calculo de acuracia em termos de tendencia
+tendencia_real = []
+tendencia_calc = []
+
+for amostra in testy:
+    if amostra[-1]-amostra[0] > 0:
+        tendencia_real.append(1)
+    elif amostra[-1]-amostra[0] == 0:
+        tendencia_real.append(0)
+    else:
+        tendencia_real.append(-1)
+
+for amostra in saida_teste:
+    if amostra[-1]-amostra[0] > 0:
+        tendencia_calc.append(1)
+    elif amostra[-1]-amostra[0] < 0:
+        tendencia_calc.append(-1)
+    else:
+        tendencia_calc.append(0)
+
+acertos = 0
+for i in range(len(tendencia_calc)):
+    if tendencia_calc[i] == tendencia_real[i]:
+        acertos = acertos + 1
+
+zeros_real = tendencia_real.count(0)
+zeros_calc = tendencia_calc.count(0)
+
+acuracia = acertos/len(tendencia_calc) * 100
+
+print("\n\nACURACIA: {}%\n\n".format(acuracia))
 
 ########################### Plot grafico da evolucao da rede
 if treinar:
@@ -133,12 +165,6 @@ testey_impar = testy.copy()
 saida_teste_par   = saida_teste.copy()
 saida_teste_impar = saida_teste.copy()
 
-#testey_par[conjunto_par]          = np.zeros([len(conjunto_par), 1])
-#testey_impar[conjunto_impar]      = np.zeros([len(conjunto_impar), 1])
-#saida_teste_par[conjunto_par]     = np.zeros([len(conjunto_par), 1])
-#saida_teste_impar[conjunto_impar] = np.zeros([len(conjunto_impar), 1])
-
-#testy = testy[amostra_teste].flatten()
 testey_par        = testey_par.flatten()
 testey_impar      = testey_impar.flatten()
 saida_teste_par   = saida_teste_par.flatten()
