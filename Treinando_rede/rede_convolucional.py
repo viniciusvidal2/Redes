@@ -18,19 +18,21 @@ class Rede_convolucional:
         # [samples, timesteps, features]
         rede = Sequential()
 
-        rede.add(Conv1D(filters=64, kernel_size=kernel, input_shape=(dias, variaveis)))
-        rede.add(Activation('relu'))
+        rede.add(LSTM(saidas, return_sequences=True, dropout=0, recurrent_dropout=0, activation='tanh'))
+
+        rede.add(Conv1D(filters=64, kernel_size=kernel))
+        rede.add(Activation('tanh'))
         rede.add(BatchNormalization())
+
+        #rede.add(Conv1D(filters=32, kernel_size=kernel))
+        #rede.add(Activation('relu'))
+        #rede.add(Dropout(0.1))
+        #rede.add(Flatten())
         
-        rede.add(Conv1D(filters=32, kernel_size=kernel))
-        rede.add(Activation('relu'))
-        rede.add(Dropout(0.1))
-        rede.add(Flatten())
+        #rede.add(Dense(10, activation='relu')) 
+        #rede.add(Dropout(0.25))
         
-        rede.add(Dense(10, activation='relu')) 
-        rede.add(Dropout(0.25))
-        
-        rede.add(Dense(saidas, activation='relu'))
+        rede.add(Dense(saidas, activation='tanh'))
         
         return rede
 

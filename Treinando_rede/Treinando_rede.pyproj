@@ -30,6 +30,9 @@
     </Compile>
     <Compile Include="rede_concatenada.py" />
     <Compile Include="rede_recursiva.py" />
+    <Compile Include="Treina_classificatoria.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Treina_rede_acoes.py" />
   </ItemGroup>
   <ItemGroup>

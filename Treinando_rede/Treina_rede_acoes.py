@@ -26,14 +26,15 @@ from numpy import array
 from sklearn.model_selection import train_test_split
 
 ########################### Inicia lendo os dados, separando ou ja lendo de um arquivo
-#filePath = ['./../DATAYEAR/COTACAO_CMIG4_2011.txt', './../DATAYEAR/COTACAO_CMIG4_2012.txt', './../DATAYEAR/COTACAO_CMIG4_2013.txt', './../DATAYEAR/COTACAO_CMIG4_2014.txt',
-#            './../DATAYEAR/COTACAO_CMIG4_2015.txt', './../DATAYEAR/COTACAO_CMIG4_2016.txt', './../DATAYEAR/COTACAO_CMIG4_2017.txt', './../DATAYEAR/COTACAO_CMIG4_2018.txt']
+filePath = ['./../DATAYEAR/COTACAO_CMIG4_2018.txt']
+#filePath = ['./../DATAYEAR/COTACAO_VVAR3_2012.txt', './../DATAYEAR/COTACAO_VVAR3_2013.txt', './../DATAYEAR/COTACAO_VVAR3_2014.txt',
+#            './../DATAYEAR/COTACAO_VVAR3_2015.txt', './../DATAYEAR/COTACAO_VVAR3_2016.txt', './../DATAYEAR/COTACAO_VVAR3_2017.txt', './../DATAYEAR/COTACAO_VVAR3_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
-filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
+#filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
-SampleSize = 15
-Dias_previstos = 4
+SampleSize = 7
+Dias_previstos = 3
 
 # Organizando dados
 print('Organizando dados...')
@@ -44,7 +45,7 @@ Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 variacao  = fl.ROC(1, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
 Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
-mascara_entradas = [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+mascara_entradas = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 InputNumber = sum(mascara_entradas)
 OutputPositions = np.array([11]) # variaveis a serem previstas - olhar dentro da funcao
 X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
@@ -76,19 +77,19 @@ Xtreino = np.delete(X, X.shape[0]+intervalo_teste, axis=0)
 Ytreino = np.delete(Y, Y.shape[0]+intervalo_teste, axis=0)
 #Xtreino = np.delete(X, intervalo_teste+X.shape[0], axis=0)
 #Ytreino = np.delete(Y, intervalo_teste+X.shape[0], axis=0)
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.30, random_state=30)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = False
+treinar = True
 if treinar:
-    epocas = 2000 # por quantas epocas treinar
+    epocas = 10000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.0005, decay=0.0000005, amsgrad=False)
+    adam = Adam(lr=0.001, decay=0.0000005, amsgrad=False)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
-    rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
-    #rede = Rede_complexa.montar(SampleSize, InputNumber, 1)
-    rede.compile(optimizer=adam, loss='mse')
+    #rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
+    rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
+    rede.compile(optimizer=adam, loss='mse', metrics=['accuracy'])
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
     parada_forcada = EarlyStopping(monitor='val_loss', patience=40, verbose=1)
@@ -98,44 +99,55 @@ if treinar:
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
     #rede = load_model('Melhores_redes/atual.hdf5')
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=2, epochs=epocas, callbacks=[melhor_rede], verbose=1)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=100, epochs=epocas, callbacks=[melhor_rede], verbose=2)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-testx=valx.copy()
-testy=valy.copy()
+#testx=valx.copy()
+#testy=valy.copy()
 saida_teste = rede2.predict(testx, verbose=1)
 
 ########################### Calculo de acuracia em termos de tendencia
 tendencia_real = []
 tendencia_calc = []
-
-for amostra in testy:
-    if amostra[-1]-amostra[0] > 0:
-        tendencia_real.append(1)
-    elif amostra[-1]-amostra[0] == 0:
-        tendencia_real.append(0)
-    else:
-        tendencia_real.append(-1)
-
-for amostra in saida_teste:
-    if amostra[-1]-amostra[0] > 0:
-        tendencia_calc.append(1)
-    elif amostra[-1]-amostra[0] < 0:
-        tendencia_calc.append(-1)
-    else:
-        tendencia_calc.append(0)
-
 acertos = 0
-for i in range(len(tendencia_calc)):
-    if tendencia_calc[i] == tendencia_real[i]:
-        acertos = acertos + 1
+flag_calculo = 2 # 1 para valores direto na saida, 2 para diferenca entre os dias
+# Quando valores direto na saida
+if flag_calculo == 1:
+    for amostra in testy:
+        if amostra[-1]-amostra[0] > 0:
+            tendencia_real.append(1)
+        elif amostra[-1]-amostra[0] == 0:
+            tendencia_real.append(0)
+        else:
+            tendencia_real.append(-1)
 
-zeros_real = tendencia_real.count(0)
-zeros_calc = tendencia_calc.count(0)
+    for amostra in saida_teste:
+        if amostra[-1]-amostra[0] > 0:
+            tendencia_calc.append(1)
+        elif amostra[-1]-amostra[0] < 0:
+            tendencia_calc.append(-1)
+        else:
+            tendencia_calc.append(0)
+            
+    for i in range(len(tendencia_calc)):
+        if tendencia_calc[i] == tendencia_real[i]:
+            acertos = acertos + 1
 
+    zeros_real = tendencia_real.count(0)
+    zeros_calc = tendencia_calc.count(0)
+    
+elif flag_calculo == 2:
+    for amostra in testy:
+        tendencia_real.append(sum(amostra))
+    for amostra in saida_teste:
+        tendencia_calc.append(sum(amostra))
+
+    for i in range(len(tendencia_calc)):
+        if tendencia_calc[i] > 0 and tendencia_real[i] > 0 or tendencia_calc[i] < 0 and tendencia_real[i] < 0:
+            acertos = acertos + 1
+    
 acuracia = acertos/len(tendencia_calc) * 100
-
 print("\n\nACURACIA: {}%\n\n".format(acuracia))
 
 ########################### Plot grafico da evolucao da rede
@@ -157,10 +169,10 @@ testey_impar = testy.copy()
 saida_teste_par   = saida_teste.copy()
 saida_teste_impar = saida_teste.copy()
 
-testey_par[conjunto_par]          = np.zeros(conjunto_par.shape)
-testey_impar[conjunto_impar]      = np.zeros(conjunto_impar.shape)
-saida_teste_par[conjunto_par]     = np.zeros(cconjunto_par.shape)
-saida_teste_impar[conjunto_impar] = np.zeros(cconjunto_impar.shape)
+testey_par[conjunto_par]          = np.zeros([conjunto_par.size  , testey_par.shape[1]]  )
+testey_impar[conjunto_impar]      = np.zeros([conjunto_impar.size, testey_impar.shape[1]])
+saida_teste_par[conjunto_par]     = np.zeros([conjunto_par.size  , testey_par.shape[1]]  )
+saida_teste_impar[conjunto_impar] = np.zeros([conjunto_impar.size, testey_impar.shape[1]])
 
 testey_par        = testey_par.flatten()
 testey_impar      = testey_impar.flatten()
@@ -180,51 +192,52 @@ plt.legend()
 plt.grid()
 
 ############################ Trazer de volta para valores reais
-#testy = testy.flatten()
-#saida_teste = saida_teste.flatten()
-#Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
-#saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
-#testey_par2        = fl.ReturnRealValue(testey_par, minimos, maximos, amplitudes, OutputPositions)
-#testey_impar2      = fl.ReturnRealValue(testey_impar, minimos, maximos, amplitudes, OutputPositions)
-#saida_teste_par2   = fl.ReturnRealValue(saida_teste_par, minimos, maximos, amplitudes, OutputPositions)
-#saida_teste_impar2 = fl.ReturnRealValue(saida_teste_impar, minimos, maximos, amplitudes, OutputPositions)
+if flag_calculo == 1:
+    testy = testy.flatten()
+    saida_teste = saida_teste.flatten()
+    Y_real           = fl.ReturnRealValue(testy      , minimos, maximos, amplitudes, OutputPositions)
+    saida_teste_real = fl.ReturnRealValue(saida_teste, minimos, maximos, amplitudes, OutputPositions)
+    testey_par2        = fl.ReturnRealValue(testey_par, minimos, maximos, amplitudes, OutputPositions)
+    testey_impar2      = fl.ReturnRealValue(testey_impar, minimos, maximos, amplitudes, OutputPositions)
+    saida_teste_par2   = fl.ReturnRealValue(saida_teste_par, minimos, maximos, amplitudes, OutputPositions)
+    saida_teste_impar2 = fl.ReturnRealValue(saida_teste_impar, minimos, maximos, amplitudes, OutputPositions)
 
-#plt.figure()
-#plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
-#plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
-#plt.title('Fechamento')
-#plt.xlabel('Dia')
-#plt.ylabel('Valor R$')
-#plt.legend()
-#plt.grid()
+    plt.figure()
+    plt.plot(np.arange(0, Y_real.shape[0] )         , Y_real          , label="Fechamento Real")
+    plt.plot(np.arange(0, saida_teste_real.shape[0]), saida_teste_real, label="Fechamento Calculado")
+    plt.title('Fechamento')
+    plt.xlabel('Dia')
+    plt.ylabel('Valor R$')
+    plt.legend()
+    plt.grid()
 
-#plt.figure()
-#plt.plot(np.arange(0, testey_par2.shape[0]), testey_par2, 'b+', label="Fechamento Real")
-#plt.plot(np.arange(0, testey_impar2.shape[0]), testey_impar2, 'k+', label="Fechamento Real")
-#plt.plot(np.arange(0, saida_teste_par2.shape[0]), saida_teste_par2, 'ro', label="Fechamento Calculado")
-#plt.plot(np.arange(0, saida_teste_impar2.shape[0]), saida_teste_impar2, 'mo', label="Fechamento Calculado")
-#plt.title('Fechamento')
-#plt.xlabel('Dia')
-#plt.ylabel('Valor R$')
-#plt.legend()
-#plt.grid()
+    plt.figure()
+    plt.plot(np.arange(0, testey_par2.shape[0]), testey_par2, 'b+', label="Fechamento Real")
+    plt.plot(np.arange(0, testey_impar2.shape[0]), testey_impar2, 'k+', label="Fechamento Real")
+    plt.plot(np.arange(0, saida_teste_par2.shape[0]), saida_teste_par2, 'ro', label="Fechamento Calculado")
+    plt.plot(np.arange(0, saida_teste_impar2.shape[0]), saida_teste_impar2, 'mo', label="Fechamento Calculado")
+    plt.title('Fechamento')
+    plt.xlabel('Dia')
+    plt.ylabel('Valor R$')
+    plt.legend()
+    plt.grid()
 
-# #Calculo do erro entre os valores reais R$
-#erros = Y_real[0:len(saida_teste_real)] - saida_teste_real
-#media_erros = np.mean(erros)
-#media_erros_abs = np.mean(np.abs(erros))
-#erro_max = np.max(erros)
-#erro_min = np.min(erros)
+    #Calculo do erro entre os valores reais R$
+    erros = Y_real[0:len(saida_teste_real)] - saida_teste_real
+    media_erros = np.mean(erros)
+    media_erros_abs = np.mean(np.abs(erros))
+    erro_max = np.max(erros)
+    erro_min = np.min(erros)
 
-#print('\nA media dos erros e: {}\t Sobre valores absolutos: {}'.format(media_erros, media_erros_abs))
-#print('\nErro minimo R$     : {}\t Erro maximo R$         : {}'.format(erro_min   , erro_max       ))
+    print('\nA media dos erros e: {}\t Sobre valores absolutos: {}'.format(media_erros, media_erros_abs))
+    print('\nErro minimo R$     : {}\t Erro maximo R$         : {}'.format(erro_min   , erro_max       ))
 
-#plt.figure()
-#plt.plot(np.arange(0, erros.shape[0] ), erros, label="Erros")
-#plt.title('Erros Real - Calculado')
-#plt.xlabel('Dia')
-#plt.ylabel('Valor R$')
-#plt.legend()
-#plt.grid()
+    plt.figure()
+    plt.plot(np.arange(0, erros.shape[0] ), erros, label="Erros")
+    plt.title('Erros Real - Calculado')
+    plt.xlabel('Dia')
+    plt.ylabel('Valor R$')
+    plt.legend()
+    plt.grid()
 
 plt.show(block=True)
