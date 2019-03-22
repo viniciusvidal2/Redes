@@ -180,7 +180,7 @@ def OS(Ndias, Data):
 
 def williams_R(Ndias,Data):
     """
-    [Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
+     Data must be --> [Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
 
     O indicador Williams %R geralmente é utilizado pela maioria dos analistas como o período de 14 dias.
 
@@ -212,7 +212,7 @@ def williams_R(Ndias,Data):
 def plotCandle(Ndias,Data1):
     """
 
-        [Data, Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
+       Data must be ---> [Data, Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
     """
     date = Data1[:,0]
     Data = Data1[:,1:7].astype('float32')

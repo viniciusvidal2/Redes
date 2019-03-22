@@ -14,7 +14,7 @@ import Indicadores as Ind
 import Filetorede as Fr
 
 
-def descript():
+def decrypt():
 
     # === Leitura dos dados no arquivo baixado na bolsa pra descriptografar ===
 
@@ -34,10 +34,10 @@ def leituradado():
 
     # ======== Leitura e organização dos dados para entrada na rede ===========
 
-    filePath    = 'COTACAO_ELET6_2017.txt'
+    filePath    = 'COTACAO_BOVA11_2013.txt'
     SampleSize  = 3
     InputNumber = 1
-    NdaysPrev = 1
+    NdaysPrev   = 1
 
     # Faz a leitura do arquivo
     Array = Fr.ReadData(filePath)
@@ -45,7 +45,7 @@ def leituradado():
     # remover  a coluna com a data para trabalhar apenas com os numeros
     Array = Fr.removeDate(Array)
 
-    #Array = Fr.Normalize(Data)
+    Array2 = Fr.Normalize(Array)
 
     # Calcula todos o indices para conferir com o que está guardado no arquivo.
     med = Ind.MME(14,Array[:,1])
@@ -110,4 +110,4 @@ def leituradado():
 
 #[Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D)]
 
-descript()
+leituradado()

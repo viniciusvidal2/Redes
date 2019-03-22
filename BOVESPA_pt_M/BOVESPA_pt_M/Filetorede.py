@@ -11,7 +11,16 @@ from datetime import datetime
 
 #plotly.tools.set_credentials_file(username='mathausfsilva', api_key='201113510277')
 def removeDate(A):
-    
+    """
+    ENTRADA DE DADOS 
+    A = Vetor onde a primeira coluna deve ser removida.
+    Neste caso, 
+    [Data, abertura,.....]
+
+    SAIDA
+    [Abertura, ....]
+
+    """
     A = A[:,1:len(A[1])]
     
     return A
@@ -19,7 +28,7 @@ def removeDate(A):
 
 def plotCandle(Ndias,Data1):
 
-        #[data, Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
+    #[data, Abertura, Fechamanto, Maxima, Miníma, Média, Volume]
     date = Data1[:,0]
     Data = Data1[:,1:7].astype('float32')
 
@@ -64,7 +73,7 @@ def plotCandle(Ndias,Data1):
     py.iplot(data, filename='candlestick_datetime.html')
 
 def ReadData(filePath):
-    ## This function read the data for the file in the filePath variable
+    ## This function reads the data from the file in the filePath variable
 
         dados = joblib.load(filePath)
 
@@ -76,7 +85,10 @@ def ReadData(filePath):
 def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
     """
     This function organize the Data_array considering the sampleSize and inputNumber
+
     Data_array  --> Array organized as : Rows = Days  Columns = Day Inputs 
+    [Abertura, fechamento, maxima,....]
+
     sampleSize  --> Number of samples  (days in this case)
     inputNumber --> Number of inputs for each day
     Ndays       --> Numero de dias a ser previsto
@@ -114,8 +126,9 @@ def OrganizeData(Data_array, sampleSize, inputNumber,Ndays,outPosition):
 
 def Normalize(array):
     """
+    Array = [Abertura, Fechamento, ...] Não deve conter Data na primeira coluna]
     Vetor deve ter a entrada do tipo  [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
-    Normaliza os valores entre 0 e 1 e remove a primeira coluna do aquivo com dados (primeira coluna  = Data)
+    Normaliza os valores entre 0 e 1 
 
     Todas as colunas da matriz são normalizadas com excessão da primeira.
     """
@@ -123,8 +136,7 @@ def Normalize(array):
     minimo = [] 
     Amp    = []
 
-    #Array  = np.array(array[:,1:len(array[1])])
-    Array  = Array.astype('float32')
+    Array  = array.astype('float32')
     ArrayT = np.transpose(Array)
 
     # Initialization of the output array

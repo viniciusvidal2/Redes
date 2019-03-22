@@ -15,7 +15,9 @@ def removeDate(A):
 
 def concatena(A,b):
     """
-    A = [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
+    ENTRADA DE DADOS
+    A = Data must be --> [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
+    b = Vetor coluna a ser concatenado 
     """
 
 
@@ -46,9 +48,10 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
 
     path_to_save = Caminho completo até a pasta onde será salvo o arquivo descriptografado
         Ex: path_to_save = 'C:\\Users\\Mathaus\\Documents\\GitHub\\Redes\\DATAYEAR\\'
-
+    ===========================================================================================
     Salva Arquivo com os dados Lidos da B3 no formato 
     [Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D)]
+    ===========================================================================================
     onde:
     MME = Média Móvel Exponencial
     IFR = Indice de Força Relativo
@@ -96,8 +99,3 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
 
            except:
                 print("{}_{}  NÃO ENCONTRADO! ".format(stockname[j], year[i]))
-
-
-
-
-
