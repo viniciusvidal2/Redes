@@ -13,6 +13,22 @@ import Bovespatofile as Rd
 import Indicadores as Ind
 import Filetorede as Fr
 
+def concatena(A,b):
+    """
+    ENTRADA DE DADOS
+    A = Data must be --> [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
+    b = Vetor coluna a ser concatenado 
+    """
+    if type(A) is not list:
+        A = A.tolist()
+
+    for i in range(len(A)):
+        A[i].append(b[i])
+    
+    A = np.array(A)
+    A = A.astype('float32')
+    return A
+
 
 def decrypt():
 
@@ -23,8 +39,8 @@ def decrypt():
     filepath  = 'D:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
     filename  = 'COTACAO_'
     stockname = ['BOVA11','VALE4','ABCP11','ITUB4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
-    year      = [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018]
-    path_save = 'C:\\Users\\Mathaus\\Documents\\GitHub\\Redes\\DATAYEAR\\'
+    year      = [2019]
+    path_save = 'C:\\Users\\Grin\\Documents\\GitHub\\Redes\\DATAYEAR\\'
 
     Ndays     = 14
 
@@ -34,7 +50,7 @@ def leituradado():
 
     # ======== Leitura e organização dos dados para entrada na rede ===========
 
-    filePath    = 'COTACAO_BOVA11_2013.txt'
+    filePath    = 'COTACAO_BOVA11_2019.txt'
     SampleSize  = 3
     InputNumber = 1
     NdaysPrev   = 1
@@ -57,7 +73,7 @@ def leituradado():
 
     Variacao = Ind.ROC(1,Array[:,1])
     # O Arquivo lido é um array e deve ser convertido para lista para ser concatenado
-    Array = Rd.concatena(Array,Variacao)
+    Array = concatena(Array,Variacao)
 
     # Criação de Figura para a comparação dos valores já lidos no aquivo, com os aqui calculados
     # Figura com indicadores salvos previamente
@@ -110,4 +126,12 @@ def leituradado():
 
 #[Data, Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D)]
 
-leituradado()
+
+
+a = [1, 2, 3]
+b = [4, 5, 6]
+C = a + b
+print (C)
+
+decrypt()
+#leituradado()

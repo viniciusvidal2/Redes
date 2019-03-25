@@ -19,14 +19,14 @@ def concatena(A,b):
     A = Data must be --> [Abertura, Fechamento, Maxima, Mínima, Média, Volume, MME, IFR, OBV, OS(K,D),...]
     b = Vetor coluna a ser concatenado 
     """
+    if type(A) is not list:
+        A = A.tolist()
 
-
-    A = A.tolist();
     for i in range(len(A)):
         A[i].append(b[i])
     
-    A = np.array(A)
-    A = A.astype('float32')
+    #A = np.array(A)
+    #A = A.astype('float32')
     return A
 
 def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
@@ -77,25 +77,34 @@ def readFromBovespa(filepath,filename,stockname,year,Ndays,path_to_save = None):
                # Calculo dos indicadores e concatenação com a matriz inputdata para que possa ser salva em um arquivo
                Array = np.array(inputData)
 
-               Med = Ind.MME(Ndays,Array[:,2])
-               Ifr = Ind.IFR(Ndays,Array[:,1:3])
-               Obv = Ind.OBV(Array[:,1:7])
+               dt = np.array(inputData)
+
+               # remover  a coluna com a data para trabalhar apenas com os numeros
+               Array = removeDate(Array)
+
+               Med = Ind.MME(Ndays,Array[:,1])
+               Ifr = Ind.IFR(Ndays,Array[:,0:3])
+               Obv = Ind.OBV(Array)
                K,D = Ind.OS(Ndays,Array[:,1:7])
 
-               V1 = concatena(Array,Med)
+               V1 = concatena(dt,Med)
                V2 = concatena(V1,Ifr)
                V3 = concatena(V2,Obv)
                V4 = concatena(V3,K)
                V5 = concatena(V4,D)
            
-               inputData = np.array(V5)
+               inputData =V5
 
                # salva Dados em arquivo já descriptografado (B3) com adição de indicadores
                if path_to_save is None:
-                   joblib.dump(inputData,filename+stockname[j]+'_'+str(year[i])+'.txt')
+                  string = filename+stockname[j]+'_'+str(year[i])+'.txt'
                else:
-                   joblib.dump(inputData,path_to_save+filename+stockname[j]+'_'+str(year[i])+'.txt')
-
+                  string = path_to_save+filename+stockname[j]+'_'+str(year[i])+'.txt'
+               
+               try:
+                   joblib.dump(inputData,string)
+               except:
+                   print("Errou ao Salvar o Arquivo {} !" .format(stockname[j]+'_'+str(year[i])+'.txt'))
 
            except:
                 print("{}_{}  NÃO ENCONTRADO! ".format(stockname[j], year[i]))
