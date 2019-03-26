@@ -31,10 +31,11 @@ from sklearn.model_selection import train_test_split
 #            './../DATAYEAR/COTACAO_VVAR3_2015.txt', './../DATAYEAR/COTACAO_VVAR3_2016.txt', './../DATAYEAR/COTACAO_VVAR3_2017.txt', './../DATAYEAR/COTACAO_VVAR3_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
-filePath = ['./../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt', './../DATAYEAR/COTACAO_PETR4_2019.txt']
+filePath = ['./../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt', './../DATAYEAR/COTACAO_PETR4_2019.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt', './../DATAYEAR/COTACAO_BOVA11_2019.txt']
 SampleSize = 15
-Dias_previstos = 3
+Dias_previstos = 1
+Dias_futuros   = 3
 
 # Organizando dados
 print('Organizando dados...')
@@ -42,35 +43,37 @@ Data = fl.ReadData(filePath)
 Data = fl.removeDate(Data)
 Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 
-variacao  = fl.ROC(1, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
+variacao  = fl.ROC(Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
 Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
-mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+mascara_entradas = [1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
 InputNumber = sum(mascara_entradas)
 OutputPositions = np.array([11]) # variaveis a serem previstas - olhar dentro da funcao
-X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
+X, Y = fl.OrganizeData(Data_norm[0:-Dias_futuros], SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
+
+#X_desconhecido, Y_desconhecido = fl.OrganizeData(Data_norm[-Dias_futuros:], SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
 
 X = X.reshape(X.shape[0], SampleSize, InputNumber)
 Y = Y.reshape(Y.shape[0], Y.shape[1])
 
 ## Plotar aqui as saidas de fechamento e abertura em um grafico para analise visual de padroes
-#plt.figure()
-#plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
-#plt.title('Dados Reais')
-#plt.xlabel('Dia')
-#plt.ylabel('Valor normalizado')
-#plt.legend()
-#plt.show(block=True)
+plt.figure()
+plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
+plt.title('Dados Reais')
+plt.xlabel('Dia')
+plt.ylabel('Valor normalizado')
+plt.legend()
+plt.show(block=True)
 
 #### funciona aqui a separacao entre treino, validacao e teste automatica apos o reshape mesmo
 #(trainx, val_testx, trainy, val_testy) = train_test_split(X        , Y        , test_size=0.3, random_state=20)
 #(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.1, random_state=30)
 
 ########################## Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-intervalo_teste = np.arange(-9, -1) # epoca ainda desconhecida, amostras sequenciais
+intervalo_teste = np.arange(-2, -1) # epoca ainda desconhecida, amostras sequenciais
 X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
 
-dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
+dias_teste = np.arange(0, X_teste.shape[0], 1) # testar sobre as amostras de teste em um intervalo de Dias_previstos
 (testx, testy) = X_teste[dias_teste], Y_teste[dias_teste] # Dias que realmente havera teste sobre, entrarao na funcao predict
 
 Xtreino = np.delete(X, X.shape[0]+intervalo_teste, axis=0)
@@ -80,16 +83,16 @@ Ytreino = np.delete(Y, Y.shape[0]+intervalo_teste, axis=0)
 (trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = True
+treinar = False
 if treinar:
     epocas = 10000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.001, decay=0.0000005, amsgrad=False)
+    adam = Adam(lr=0.001, decay=0.000005, amsgrad=False)
     #rede = Rede_convolucional.montar(SampleSize, InputNumber, len(Out_posi))
     #rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
-    rede.compile(optimizer=adam, loss='mse', metrics=['accuracy'])
+    rede.compile(optimizer=adam, loss='mse')
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
     parada_forcada = EarlyStopping(monitor='val_loss', patience=400, verbose=1)
@@ -181,8 +184,8 @@ saida_teste_impar = saida_teste_impar.flatten()
 
 # Plot para comparacao com o conjunto de teste - Precos de saida de abertura e fechamento
 plt.figure()
-plt.plot(np.arange(0, testey_par.shape[0] )    , testey_par     , 'b+', label="Fechamento Real")
-plt.plot(np.arange(0, testey_impar.shape[0] )  , testey_impar   , 'k+', label="Fechamento Real")
+plt.plot(np.arange(0, testey_par.shape[0] )    , testey_par  , 'b+', label="Fechamento Real")
+plt.plot(np.arange(0, testey_impar.shape[0] )  , testey_impar, 'k+', label="Fechamento Real")
 plt.plot(np.arange(0, saida_teste_par.shape[0])  , saida_teste_par  , 'ro', label="Fechamento Calculado")
 plt.plot(np.arange(0, saida_teste_impar.shape[0]), saida_teste_impar, 'mo', label="Fechamento Calculado")
 plt.title('Fechamento')

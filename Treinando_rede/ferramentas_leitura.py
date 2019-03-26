@@ -196,6 +196,6 @@ def ROC(N,Fechamento):
 
     for i in range(len(Fechamento)-N):
          
-        ROC[N+i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
+        ROC[i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
 
     return ROC
