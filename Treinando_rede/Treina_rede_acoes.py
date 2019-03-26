@@ -26,14 +26,14 @@ from numpy import array
 from sklearn.model_selection import train_test_split
 
 ########################### Inicia lendo os dados, separando ou ja lendo de um arquivo
-filePath = ['./../DATAYEAR/COTACAO_CMIG4_2018.txt']
+#filePath = ['./../DATAYEAR/COTACAO_CMIG4_2018.txt', './../DATAYEAR/COTACAO_CMIG4_2019.txt']
 #filePath = ['./../DATAYEAR/COTACAO_VVAR3_2012.txt', './../DATAYEAR/COTACAO_VVAR3_2013.txt', './../DATAYEAR/COTACAO_VVAR3_2014.txt',
 #            './../DATAYEAR/COTACAO_VVAR3_2015.txt', './../DATAYEAR/COTACAO_VVAR3_2016.txt', './../DATAYEAR/COTACAO_VVAR3_2017.txt', './../DATAYEAR/COTACAO_VVAR3_2018.txt']
 #filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
 #            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
-#filePath = ['./../DATAYEAR/COTACAO_PETR4_2015.txt', './../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt']
-#filePath = ['./../DATAYEAR/COTACAO_BOVA11_2015.txt', './../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt']
-SampleSize = 7
+filePath = ['./../DATAYEAR/COTACAO_PETR4_2016.txt', './../DATAYEAR/COTACAO_PETR4_2017.txt', './../DATAYEAR/COTACAO_PETR4_2018.txt', './../DATAYEAR/COTACAO_PETR4_2019.txt']
+#filePath = ['./../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt', './../DATAYEAR/COTACAO_BOVA11_2019.txt']
+SampleSize = 15
 Dias_previstos = 3
 
 # Organizando dados
@@ -45,7 +45,7 @@ Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 variacao  = fl.ROC(1, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
 Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
-mascara_entradas = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 InputNumber = sum(mascara_entradas)
 OutputPositions = np.array([11]) # variaveis a serem previstas - olhar dentro da funcao
 X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
@@ -67,7 +67,7 @@ Y = Y.reshape(Y.shape[0], Y.shape[1])
 #(valx  , testx    , valy  , testy    ) = train_test_split(val_testx, val_testy, test_size=0.1, random_state=30)
 
 ########################## Aqui separa os ultimos dias_teste dias para teste, porem o treino e validacao mantem sendo aleatorios no restante das amostras
-intervalo_teste = np.arange(-40, -1) # epoca ainda desconhecida, amostras sequenciais
+intervalo_teste = np.arange(-9, -1) # epoca ainda desconhecida, amostras sequenciais
 X_teste, Y_teste = X[intervalo_teste].copy(), Y[intervalo_teste].copy()
 
 dias_teste = np.arange(0, X_teste.shape[0], Dias_previstos) # testar sobre as amostras de teste em um intervalo de Dias_previstos
@@ -92,19 +92,19 @@ if treinar:
     rede.compile(optimizer=adam, loss='mse', metrics=['accuracy'])
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
-    parada_forcada = EarlyStopping(monitor='val_loss', patience=40, verbose=1)
+    parada_forcada = EarlyStopping(monitor='val_loss', patience=400, verbose=1)
     # Plotando arquitetura da rede
     plot_model(rede, "Melhores_redes/arquitetura_atual.png", show_shapes=True, show_layer_names=True)
 
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
     #rede = load_model('Melhores_redes/atual.hdf5')
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=100, epochs=epocas, callbacks=[melhor_rede], verbose=2)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=100, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=2)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-#testx=valx.copy()
-#testy=valy.copy()
+testx=valx.copy()
+testy=valy.copy()
 saida_teste = rede2.predict(testx, verbose=1)
 
 ########################### Calculo de acuracia em termos de tendencia
@@ -136,7 +136,7 @@ if flag_calculo == 1:
 
     zeros_real = tendencia_real.count(0)
     zeros_calc = tendencia_calc.count(0)
-    
+# Quando valores diferenciais na saida
 elif flag_calculo == 2:
     for amostra in testy:
         tendencia_real.append(sum(amostra))
@@ -240,4 +240,13 @@ if flag_calculo == 1:
     plt.legend()
     plt.grid()
 
+elif flag_calculo == 2:
+    plt.figure()
+    plt.plot(np.arange(0, len(tendencia_real)), 100*np.array(tendencia_real), 'b+', label="Variacoes reais")
+    plt.plot(np.arange(0, len(tendencia_calc)), 100*np.array(tendencia_calc), 'mo', label="Variacoes calculadas")
+    plt.title('Variacoes')
+    plt.xlabel('Dia')
+    plt.ylabel('Percentual dia anterior')
+    plt.legend()
+    plt.grid()
 plt.show(block=True)
