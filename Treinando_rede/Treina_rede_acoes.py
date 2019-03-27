@@ -26,13 +26,12 @@ from numpy import array
 from sklearn.model_selection import train_test_split
 
 ########################### Inicia lendo os dados, separando ou ja lendo de um arquivo
-filePath = ['./../DATAYEAR/COTACAO_CMIG4_2019.txt']
+#filePath = ['./../DATAYEAR/COTACAO_CMIG4_2019.txt']
 #filePath = ['./../DATAYEAR/COTACAO_VVAR3_2019.txt']
-#filePath = ['./../DATAYEAR/COTACAO_ITUB4_2011.txt', './../DATAYEAR/COTACAO_ITUB4_2012.txt', './../DATAYEAR/COTACAO_ITUB4_2013.txt', './../DATAYEAR/COTACAO_ITUB4_2014.txt',
-#            './../DATAYEAR/COTACAO_ITUB4_2015.txt', './../DATAYEAR/COTACAO_ITUB4_2016.txt', './../DATAYEAR/COTACAO_ITUB4_2017.txt', './../DATAYEAR/COTACAO_ITUB4_2018.txt']
+filePath = [ './../DATAYEAR/COTACAO_ITUB4_2019.txt']
 #filePath = [ './../DATAYEAR/COTACAO_PETR4_2019.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt', './../DATAYEAR/COTACAO_BOVA11_2019.txt']
-SampleSize = 20
+SampleSize = 15
 Dias_previstos = 1
 Dias_futuros   = 3
 
@@ -42,7 +41,7 @@ Data = fl.ReadData(filePath)
 Data = fl.removeDate(Data)
 Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 
-variacao  = fl.ROC(Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, nao normalizado
+variacao  = fl.ROC(Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, normalizado para o dia anterior
 Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
 mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -85,12 +84,20 @@ Ytreino = Y.copy()
 (trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=30)
 
 ########################### Aqui monta a rede usando a classe desejada
-treinar = True
+flag_calculo = 3 # 1 para valores direto na saida, 2 para diferenca entre os dias, 3 para pura previsao
+if flag_calculo == 2:
+    treinar = True
+    testx = valx.copy()
+    testy = valy.copy()
+if flag_calculo == 3:
+    treinar = False
+    testx = X_desconhecido.copy()
+
 if treinar:
     epocas = 10000 # por quantas epocas treinar
 
     print("Criando otimizador e rede...")
-    adam = Adam(lr=0.001, decay=0.000005, amsgrad=False)
+    adam = Adam(lr=0.0005, decay=0.000005, amsgrad=False)
     rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     #rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     rede.compile(optimizer=adam, loss='mse')
@@ -103,20 +110,17 @@ if treinar:
     # Aqui acontece o treino e ajuste de pesos realmente - observar BATCH SIZE
     print("Comecando o treinamento da rede...")
     #rede = load_model('Melhores_redes/atual.hdf5')
-    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=50, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=2)
+    H = rede.fit(trainx, trainy, validation_data=(valx, valy), batch_size=10, epochs=epocas, callbacks=[melhor_rede, parada_forcada], verbose=2)
 
 ########################### Testar em cima da melhor rede possivel salva anteriormente
 rede2 = load_model('Melhores_redes/atual.hdf5')
-testx = valx.copy()
-testy = valy.copy()
-#testx = X_desconhecido.copy()
 saida_teste = rede2.predict(testx, verbose=1)
 
 ########################### Calculo de acuracia em termos de tendencia
 tendencia_real = []
 tendencia_calc = []
 acertos = 0
-flag_calculo = 2 # 1 para valores direto na saida, 2 para diferenca entre os dias, 3 para pura previsao
+
 # Quando valores direto na saida
 if flag_calculo == 1:
     for amostra in testy:
