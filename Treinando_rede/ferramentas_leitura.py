@@ -196,6 +196,25 @@ def ROC(N,Fechamento):
 
     for i in range(len(Fechamento)-N):
          
-        ROC[i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
+        ROC[N+i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
+
+    return ROC
+
+
+def ROCF(N, Fechamento):
+    """
+    N = Numero de dias para o futuro
+    Fechamento = dados diarios de fechamento
+
+    Descrição Matemática
+
+    Taxa de Variação[i] = (Preço de Fechamento[i+N] – Preço de Fechamento[i]) / Preço de Fechamento[i])
+    """
+
+    ROC = np.zeros(len(Fechamento))
+    Fechamento = Fechamento.astype('float32')
+
+    for i in range(len(Fechamento) - N):
+        ROC[i] = (Fechamento[N + i] - Fechamento[i]) / Fechamento[i]
 
     return ROC

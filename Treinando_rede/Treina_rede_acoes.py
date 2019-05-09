@@ -27,11 +27,11 @@ from sklearn.model_selection import train_test_split
 
 ########################### Inicia lendo os dados, separando ou ja lendo de um arquivo
 #filePath = ['./../DATAYEAR/COTACAO_CMIG4_2019.txt']
-#filePath = ['./../DATAYEAR/COTACAO_VVAR3_2019.txt']
-filePath = [ './../DATAYEAR/COTACAO_ITUB4_2019.txt']
+filePath = ['./../DATAYEAR/COTACAO_BOVA11_2019.txt']
+#filePath = [ './../DATAYEAR/COTACAO_ITUB4_2019.txt']
 #filePath = [ './../DATAYEAR/COTACAO_PETR4_2019.txt']
 #filePath = ['./../DATAYEAR/COTACAO_BOVA11_2016.txt', './../DATAYEAR/COTACAO_BOVA11_2017.txt', './../DATAYEAR/COTACAO_BOVA11_2018.txt', './../DATAYEAR/COTACAO_BOVA11_2019.txt']
-SampleSize = 15
+SampleSize = 10
 Dias_previstos = 1
 Dias_futuros   = 3
 
@@ -41,12 +41,14 @@ Data = fl.ReadData(filePath)
 Data = fl.removeDate(Data)
 Data_norm, maximos, minimos, amplitudes = fl.Normalize(Data)
 
-variacao  = fl.ROC(Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, normalizado para o dia anterior
-Data_norm = fl.concatena(Data_norm, variacao) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
+variacao  = fl.ROC( Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, normalizado para o dia anterior
+variacaof = fl.ROCF(Dias_futuros, Data[:,1]) # Calculo a variacao no valor do fechamento real, normalizado para o dia anterior
+Data_norm = fl.concatena(Data_norm, variacao ) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
+Data_norm = fl.concatena(Data_norm, variacaof) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
-mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # variacao futura nao usada (ROCF), somente ROC
 InputNumber = sum(mascara_entradas)
-OutputPositions = np.array([11]) # variaveis a serem previstas - olhar dentro da funcao
+OutputPositions = np.array([12]) # variaveis a serem previstas - olhar dentro da funcao
 X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
 
 X = X.reshape(X.shape[0], SampleSize, InputNumber)
@@ -57,14 +59,14 @@ for i in range(1, Dias_futuros): # Remove entao os mesmos do final da lista de f
     X = np.delete(X, -1, axis=0)
     Y = np.delete(Y, -1, axis=0)
 
-## Plotar aqui as saidas de fechamento e abertura em um grafico para analise visual de padroes
-plt.figure()
-plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
-plt.title('Dados Reais')
-plt.xlabel('Dia')
-plt.ylabel('Valor normalizado')
-plt.legend()
-plt.show(block=True)
+## Plotar aqui as saidas de fechamento em um grafico para analise visual de padroes
+# plt.figure()
+# plt.plot(np.arange(0, Y.shape[0]), Y[:, 0], label="Fechamento real")
+# plt.title('Dados Reais')
+# plt.xlabel('Dia')
+# plt.ylabel('Valor normalizado')
+# plt.legend()
+# plt.show(block=True)
 
 #### funciona aqui a separacao entre treino, validacao e teste automatica apos o reshape mesmo
 #(trainx, val_testx, trainy, val_testy) = train_test_split(X        , Y        , test_size=0.3, random_state=20)
@@ -98,12 +100,12 @@ if treinar:
 
     print("Criando otimizador e rede...")
     adam = Adam(lr=0.0005, decay=0.000005, amsgrad=False)
-    rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
-    #rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
+    #rede = Rede_recursiva.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
+    rede = Rede_complexa.montar(SampleSize, InputNumber, Dias_previstos*len(OutputPositions))
     rede.compile(optimizer=adam, loss='mse')
     # Callbacks para salvar melhor rede e parar treino antes
     melhor_rede = ModelCheckpoint("Melhores_redes/atual.hdf5", save_best_only=True, verbose=1, monitor='val_loss')
-    parada_forcada = EarlyStopping(monitor='val_loss', patience=400, verbose=1)
+    parada_forcada = EarlyStopping(monitor='val_loss', patience=800, verbose=1)
     # Plotando arquitetura da rede
     plot_model(rede, "Melhores_redes/arquitetura_atual.png", show_shapes=True, show_layer_names=True)
 
@@ -264,7 +266,7 @@ elif flag_calculo == 2:
 elif flag_calculo == 3:
     saida_teste = saida_teste.flatten()
     plt.figure()
-    plt.plot(np.arange(0, len(saida_teste)), 100*np.array(saida_teste), 'b+', label="Variacoes Previstas")
+    plt.plot(np.arange(0, len(saida_teste)), 100*np.array(saida_teste), 'k', label="Variacoes Previstas")
     plt.title('Previsao real')
     plt.xlabel('Dia')
     plt.ylabel('Percentual dias anteriores')
