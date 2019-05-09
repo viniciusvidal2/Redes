@@ -38,10 +38,11 @@ def decrypt():
 
     filepath  = 'D:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
     filename  = 'COTACAO_'
-    stockname = ['BOVA11','VALE4','ABCP11','ITUB4','PETR4','TIET11','SANB11','ELET6','ABEV3','GOAU4','CMIG4','VVAR3']
+    stockname = ['BOVA11','USIM5','FLRY3','TRPL4','VVAR3','PETR4','TIET11','ELET6']
     year      = [2019]
-    path_save = 'C:\\Users\\Grin\\Documents\\GitHub\\Redes\\DATAYEAR\\'
-
+    path_save = 'C:\\Users\\Grin\\Documents\\GitHub\\Redes\\DATAYEAR'
+    
+    # Número de dias para o calculo dos indicadores
     Ndays     = 14
 
     Rd.readFromBovespa(filepath,filename,stockname,year,Ndays,path_save)
@@ -50,7 +51,7 @@ def leituradado():
 
     # ======== Leitura e organização dos dados para entrada na rede ===========
 
-    filePath    = 'COTACAO_BOVA11_2019.txt'
+    filePath    = 'COTACAO_FLRY3_2019.txt'
     SampleSize  = 3
     InputNumber = 1
     NdaysPrev   = 1
@@ -133,5 +134,5 @@ b = [4, 5, 6]
 C = a + b
 print (C)
 
-decrypt()
-#leituradado()
+#decrypt()
+leituradado()

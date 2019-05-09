@@ -71,6 +71,41 @@ def ROC(N,Fechamento):
 
     return ROC
 
+def ROCF(N,Fechamento):
+    """
+    Rate of Change (ROC) – Taxa de Variação    
+    SAÍDA de -1 (zero) a (1 Um)
+
+    -1 --- 0 Variação negativa
+     0 --- 1 Variação positiva
+
+    N    = numero de dias anteriores no  qual se deseja a ROC.
+    Data = [valor1, valor2, valor3, valor4, valor5, ...]
+
+    A entrada deve ser um vetor apenas com os dados que se deseja a taxa de variação
+    Diferentemente das outras funções onde a entrada é toda a matriz de dados
+
+    Descrição Matemática
+
+    Taxa de Variação[i] = (Preço de Fechamento[i] – Preço de Fechamento[i-n]) / Preço de Fechamento[i-n])
+
+    o primeiro MME[anterior] deve ser a média aritimética dos dias anteriores em um dado
+    periodo de tempo (ou pode ser assumido o primeiro valor de preço).
+
+    Sinal de Compra: a MME mais curta cruza para cima da MME mais longa
+    Sinal de Venda: a MME mais curta cruza para baixo da MME mais longa
+
+    """
+    
+    ROC = np.zeros(len(Fechamento))
+    Fechamento = Fechamento.astype('float32')
+
+    for i in range(len(Fechamento)-N):
+         
+        ROC[i] = (Fechamento[N+i] - Fechamento[i]) / Fechamento[i]
+
+    return ROC
+
 def IFR(Ndias,Data):
     """
    Data must be ---> [Abertura, Fechamanto, Maxima, Miníma, Média, Volume] 
