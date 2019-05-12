@@ -218,3 +218,20 @@ def ROCF(N, Fechamento):
         ROC[i] = (Fechamento[N + i] - Fechamento[i]) / Fechamento[i]
 
     return ROC
+
+def return_DoW(day):
+    """
+    Aqui retorna o dia da semana que tera o fechamento previsto baseado no dia final 
+    do dado coletado, dia de previsao. Exemplo:
+    Fechamento TERCA -> previsao do fechamento SEXTA (TER -> SEX)
+    """
+    if day == 'SEG':
+        return 'QUI'
+    if day == 'TER':
+        return 'SEX'
+    if day == 'QUA':
+        return 'SEG'
+    if day == 'QUI':
+        return 'TER'
+    if day == 'SEX':
+        return 'QUA'

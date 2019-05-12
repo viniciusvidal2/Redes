@@ -13,10 +13,10 @@ class Rede_recursiva:
     def montar(int_tempo, features, saidas):
         rede = Sequential()
     
-        rede.add(LSTM(saidas*3, input_shape=(int_tempo, features), return_sequences=True, dropout=0, recurrent_dropout=0, activation='tanh'))
+        rede.add(LSTM(saidas*20, input_shape=(int_tempo, features), return_sequences=True, dropout=0, recurrent_dropout=0, activation='tanh'))
         #rede.add(BatchNormalization())
 
-        rede.add(LSTM(saidas*2, return_sequences=False, dropout=0, recurrent_dropout=0, activation='tanh'))
+        rede.add(LSTM(saidas*10, return_sequences=False, dropout=0, recurrent_dropout=0, activation='tanh'))
         #rede.add(BatchNormalization())
 
         #rede.add(LSTM(saidas, return_sequences=False, dropout=0, recurrent_dropout=0, activation='tanh'))
