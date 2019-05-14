@@ -22,9 +22,9 @@ class Rede_complexa:
 
         rede.add(LSTM(20, return_sequences=True, activation='tanh', input_shape=(int_tempo, features), dropout = 0))
 
-        #rede.add(LSTM(10, return_sequences=True, activation='tanh', input_shape=(int_tempo, features), dropout = 0.2))
+        # rede.add(LSTM(10, return_sequences=True, activation='tanh', input_shape=(int_tempo, features), dropout = 0.2))
         
-        #rede.add(LSTM(5, return_sequences=True, activation='tanh', input_shape=(int_tempo, features), dropout = 0))
+        # rede.add(LSTM(15, return_sequences=True, activation='tanh', input_shape=(int_tempo, features), dropout = 0))
 
         rede.add(Conv1D(filters=20, kernel_size=kernel, activation='tanh'))
         #rede.add(Dropout(0.25))

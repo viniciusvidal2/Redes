@@ -22,8 +22,6 @@ from keras.utils import np_utils
 import matplotlib.pyplot as plt
 
 from rede_recursiva import Rede_recursiva
-from rede_concatenada import Rede_concatenada
-from rede_convolucional import Rede_convolucional
 from rede_complexa import Rede_complexa
 import ferramentas_leitura as fl
 
@@ -36,8 +34,8 @@ from sklearn.model_selection import train_test_split
 ##### --------------------------------------------------------- Leitura dos arquivos de acao passados -------------------------------------------------------------------- #####
 # Nome e caminho para a acao, dias da semana dos ultimos fechamentos (a partir dai sera previsto futuro)
 acao = 'VVAR3'
-dias = ['TER', 'QUA']
-filePath = ['./../DATAYEAR/COTACAO_'+acao+'_2019.txt']
+dias = ['SEX', 'SEG']
+filePath = ['./../DATAYEAR/ultimoCOTACAO_'+acao+'_2019.txt']
 
 # Locais e nomes de arquivos salvos
 pasta_salvar    = 'Melhores_redes/'
@@ -87,7 +85,7 @@ for i in range(1, Dias_futuros): # Remove entao os mesmos do final da lista de f
 # Conjuntos de treino, para ficar organizado, para X e Y, e que sera dividido em treinamento e validacao segundo fracionamento definido
 Xtreino = X.copy()
 Ytreino = Y.copy()
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=30)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=10)
 
 
 ##### -------------------------------------------------------------- Treinar as redes predefinidas ----------------------------------------------------------------------- #####
@@ -219,14 +217,15 @@ if redes_a_executar == 2 or redes_a_executar >= 10:
 if FLAG_TREINAMENTO:
 
     if redes_a_executar == 1 or redes_a_executar >= 10:
-        # Evolucao do treinamento da rede
-        plt.style.use("ggplot")
-        plt.plot(np.arange(0, len(H_rec.history["loss"])), H_rec.history["loss"], label="train_loss")
-        plt.plot(np.arange(0, len(H_rec.history["val_loss"])), H_rec.history["val_loss"], label="val_loss")
-        plt.title('Evolution RECURSIVA')
-        plt.xlabel('Epoch #')
-        plt.ylabel('Value')
-        plt.legend()
+        # # Evolucao do treinamento da rede
+        # plt.figure()
+        # plt.style.use("ggplot")
+        # plt.plot(np.arange(0, len(H_rec.history["loss"])), H_rec.history["loss"], label="train_loss")
+        # plt.plot(np.arange(0, len(H_rec.history["val_loss"])), H_rec.history["val_loss"], label="val_loss")
+        # plt.title('Evolution RECURSIVA')
+        # plt.xlabel('Epoch #')
+        # plt.ylabel('Value')
+        # plt.legend()
         # Saida sobre o conjunto de validacao
         plt.figure()
         plt.plot(np.arange(0, len(valy         )), 100*np.array(valy         ), 'b+', label="Variacoes reais")
@@ -238,14 +237,15 @@ if FLAG_TREINAMENTO:
         plt.grid()
 
     if redes_a_executar == 2 or redes_a_executar >= 10:
-        # Evolucao do treinamento da rede
-        plt.style.use("ggplot")
-        plt.plot(np.arange(0, len(H_rec.history["loss"])), H_rec.history["loss"], label="train_loss")
-        plt.plot(np.arange(0, len(H_rec.history["val_loss"])), H_rec.history["val_loss"], label="val_loss")
-        plt.title('Evolution COMPLEXA')
-        plt.xlabel('Epoch #')
-        plt.ylabel('Value')
-        plt.legend()
+        # # Evolucao do treinamento da rede
+        # plt.figure()
+        # plt.style.use("ggplot")
+        # plt.plot(np.arange(0, len(H_rec.history["loss"])), H_rec.history["loss"], label="train_loss")
+        # plt.plot(np.arange(0, len(H_rec.history["val_loss"])), H_rec.history["val_loss"], label="val_loss")
+        # plt.title('Evolution COMPLEXA')
+        # plt.xlabel('Epoch #')
+        # plt.ylabel('Value')
+        # plt.legend()
         # Saida sobre o conjunto de validacao
         plt.figure()
         plt.plot(np.arange(0, len(valy         )), 100*np.array(valy         ), 'b+', label="Variacoes reais")
