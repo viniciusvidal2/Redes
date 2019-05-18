@@ -34,8 +34,8 @@ from sklearn.model_selection import train_test_split
 ##### --------------------------------------------------------- Leitura dos arquivos de acao passados -------------------------------------------------------------------- #####
 # Nome e caminho para a acao, dias da semana dos ultimos fechamentos (a partir dai sera previsto futuro)
 acao = 'VVAR3'
-dias = ['SEX', 'SEG']
-filePath = ['./../DATAYEAR/ultimoCOTACAO_'+acao+'_2019.txt']
+dias = ['QUI', 'SEX']
+filePath = ['./../DATAYEAR/DATAYEARCOTACAO_'+acao+'_2019.txt']
 
 # Locais e nomes de arquivos salvos
 pasta_salvar    = 'Melhores_redes/'
@@ -85,7 +85,7 @@ for i in range(1, Dias_futuros): # Remove entao os mesmos do final da lista de f
 # Conjuntos de treino, para ficar organizado, para X e Y, e que sera dividido em treinamento e validacao segundo fracionamento definido
 Xtreino = X.copy()
 Ytreino = Y.copy()
-(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.25, random_state=10)
+(trainx, valx, trainy, valy) = train_test_split(Xtreino, Ytreino, test_size=0.15, random_state=30)
 
 
 ##### -------------------------------------------------------------- Treinar as redes predefinidas ----------------------------------------------------------------------- #####
