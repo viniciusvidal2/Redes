@@ -36,11 +36,11 @@ def decrypt():
 
     # Descriptografia dos dados baixados da B3
 
-    filepath  = 'D:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
+    filepath  = 'E:\\GoogleDrive\\Python_BOLSA_DE_Valores\\Dados_Historicos'
     filename  = 'COTACAO_'
     stockname = ['BOVA11','USIM5','FLRY3','TRPL4','VVAR3','PETR4','TIET11','ELET6']
     year      = [2019]
-    path_save = 'C:\\Users\\Grin\\Documents\\GitHub\\Redes\\DATAYEAR'
+    path_save = 'C:\\Users\\Mathaus\\Documents\\GitHub\\Redes\\DATAYEAR'
     
     # Número de dias para o calculo dos indicadores
     Ndays     = 14
@@ -134,5 +134,5 @@ b = [4, 5, 6]
 C = a + b
 print (C)
 
-#decrypt()
-leituradado()
+decrypt()
+#leituradado()
