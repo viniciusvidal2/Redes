@@ -33,7 +33,7 @@ from sklearn.model_selection import train_test_split
 
 ##### --------------------------------------------------------- Leitura dos arquivos de acao passados -------------------------------------------------------------------- #####
 # Nome e caminho para a acao, dias da semana dos ultimos fechamentos (a partir dai sera previsto futuro)
-acao = 'VVAR3'
+acao = 'FLRY3'
 dias = ['QUI', 'SEX']
 filePath = ['./../DATAYEAR/DATAYEARCOTACAO_'+acao+'_2019.txt']
 
@@ -69,8 +69,27 @@ Data_norm = fl.concatena(Data_norm, variacao ) # Adiciono como coluna no vetor d
 Data_norm = fl.concatena(Data_norm, variacaof) # Adiciono como coluna no vetor de dados em geral, posso utilizar para saida ou entrada
 
 mascara_entradas = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] # variacao futura nao usada (ROCF), somente ROC
+
+# Se estivermos testando outra acao, sem ser o BOVA11, usar o BOVA11 tambem como entrada e alterar os dados de entrada antes
+# da organizacao dos mesmos para a rede
+if acao is not 'BOVA11':
+    arquivo_bova = ['./../DATAYEAR/DATAYEARCOTACAO_BOVA11_2019.txt']
+    Data_bova = fl.ReadData(arquivo_bova)
+    Data_bova = fl.removeDate(Data_bova)
+    Data_norm_bova, max_bova, min_bova, amp_bova = fl.Normalize(Data_bova)
+
+    aberturas_bova   = Data_norm_bova[:, 0]
+    fechamentos_bova = Data_norm_bova[:, 1]
+    
+    # Adicionando dados ao vetor de entrada normalizado
+    Data_norm = fl.concatena(Data_norm, aberturas_bova)
+    mascara_entradas.append(1) # Abertura do BOVA11 como entrada da rede
+    Data_norm = fl.concatena(Data_norm, fechamentos_bova)
+    mascara_entradas.append(1) # Fechamento do BOVA11 como entrada da rede
+
 InputNumber = sum(mascara_entradas) # Quantas entradas existirao
 OutputPositions = np.array([12]) # variaveis a serem previstas - olhar dentro da funcao, porem aqui somente a ROCF sera prevista (variacao futura)
+
 X, Y = fl.OrganizeData(Data_norm, SampleSize, InputNumber, Dias_previstos, OutputPositions, mascara_entradas)
 
 X = X.reshape(X.shape[0], SampleSize, InputNumber)
